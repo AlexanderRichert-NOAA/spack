@@ -30,6 +30,7 @@ class Parallelio(CMakePackage):
         "fortran", default=True, description="enable fortran interface (requires netcdf fortran)"
     )
     variant("mpi", default=True, description="Use mpi to build, otherwise use mpi-serial")
+    variant("shared", default=True, description="Build shared libraries")
 
     depends_on("mpi", when="+mpi")
     depends_on("mpi-serial", when="~mpi")
@@ -53,7 +54,7 @@ class Parallelio(CMakePackage):
             define("NetCDF_C_PATH", spec["netcdf-c"].prefix),
             define("USER_CMAKE_MODULE_PATH", join_path(src, "cmake")),
             define("GENF90_PATH", join_path(src, "genf90")),
-            define("BUILD_SHARED_LIBS", True),
+            define_from_variant("BUILD_SHARED_LIBS", "shared"),
             define("PIO_ENABLE_EXAMPLES", False),
         ]
         if spec.satisfies("+pnetcdf"):
