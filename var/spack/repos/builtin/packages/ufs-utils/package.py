@@ -14,6 +14,7 @@ class UfsUtils(CMakePackage):
 
     homepage = "https://noaa-emcufs-utils.readthedocs.io/en/latest/"
     url = "https://github.com/NOAA-EMC/UFS_UTILS/archive/refs/tags/ufs_utils_1_6_0.tar.gz"
+    git = "https://github.com/NOAA-EMC/UFS_UTILS.git"
 
     maintainers = [
         "t-brown",
@@ -22,7 +23,8 @@ class UfsUtils(CMakePackage):
         "Hang-Lei-NOAA",
     ]
 
-    version("1_6_0", sha256="829ba4b50162e4202f96ec92a65b9fa824f71db65d2b63b70822db07d061cd92")
+    version("1_9_0", version="1.9.0", tag="ufs_utils_1_9_0", submodules=True)
+    version("1_6_0", version="1.6.0", sha256="829ba4b50162e4202f96ec92a65b9fa824f71db65d2b63b70822db07d061cd92")
 
     depends_on("bacio")
     depends_on("esmf")
@@ -46,6 +48,3 @@ class UfsUtils(CMakePackage):
             "-DMPI_C_COMPILER=%s" % self.spec["mpi"].mpicc,
             "-DMPI_Fortran_COMPILER=%s" % self.spec["mpi"].mpifc,
         ]
-
-    def setup_build_environment(self, env):
-        env.set("ESMFMKFILE", join_path(self.spec["esmf"].prefix.lib, "esmf.mk"))
