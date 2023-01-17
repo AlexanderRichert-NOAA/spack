@@ -23,8 +23,8 @@ class UfsUtils(CMakePackage):
         "Hang-Lei-NOAA",
     ]
 
-    version("1_9_0", version="1.9.0", tag="ufs_utils_1_9_0", submodules=True)
-    version("1_6_0", version="1.6.0", sha256="829ba4b50162e4202f96ec92a65b9fa824f71db65d2b63b70822db07d061cd92")
+    version("1.9.0", tag="ufs_utils_1_9_0", submodules=True)
+    version("1.6.0", sha256="829ba4b50162e4202f96ec92a65b9fa824f71db65d2b63b70822db07d061cd92")
 
     depends_on("bacio")
     depends_on("esmf")
