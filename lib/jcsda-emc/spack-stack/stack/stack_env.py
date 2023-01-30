@@ -220,7 +220,7 @@ class StackEnv(object):
         with open(env_file, "r") as raw_yaml_file:
             raw_yaml = raw_yaml_file.read()
         compiler_list_tag = "[insert-compiler-list]"
-        mpi_compiler_list = []
+        mpi_provider_list = []
         if compiler_list_tag in raw_yaml:
             packages_yaml_path = os.path.join(self.site_configs_dir(), "packages.yaml")
             if os.path.exists(packages_yaml_path):
