@@ -241,8 +241,8 @@ class StackEnv(object):
                     yaml_with_compilers = raw_yaml.replace(compiler_list_tag, compiler_list_to_insert)
                     with open(env_file, "w") as updated_config_file:
                         updated_config_file.write(yaml_with_compilers)
-             if not mpi_provider_list:
-                 warnings.warn("No MPI providers found in this site's packages.yaml. Set compiler+MPI combinations manually in spack.yaml")
+            if not mpi_provider_list:
+                warnings.warn("No MPI providers found in this site's packages.yaml. Set compiler+MPI combinations manually in spack.yaml")
 
         ev.deactivate()
 
