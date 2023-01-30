@@ -213,6 +213,22 @@ class StackEnv(object):
         with env.write_transaction():
             env.write()
 
+        # If spack.yaml contains "[populated-by-create-env]" then look for that
+        # site's stack_compilers.txt file for a listing of compiler/MPI combos
+        # and perform the replacement. stack_compilers.txt should look like
+        # the following (note the square brackets):
+        # [%intel@1.2.3,%gcc@4.5.6 ^openmpi@4.1.4]
+        stack_compilers_path = os.path.join(self.site_configs_dir(), "stack_compilers.list")
+        with open(env_file, "r") as raw_yaml_file:
+            raw_yaml = raw_yaml_file.read()
+        compiler_list_tag = "[populated-by-create-env]"
+        if compiler_list_tag in raw_yaml:
+            with open(stack_compilers_path, "r") as compiler_list_file:
+                compiler_list = compiler_list_file.read().strip()
+                yaml_with_compilers = raw_yaml.replace(compiler_list_tag, compiler_list)
+            with open(env_file, "w") as new_yaml_file:
+                new_yaml_file.write(yaml_with_compilers)
+
         ev.deactivate()
 
         logging.info('Successfully wrote environment at {}'.format(env_file))
