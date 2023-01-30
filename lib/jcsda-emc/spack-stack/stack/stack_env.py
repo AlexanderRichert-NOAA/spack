@@ -220,25 +220,29 @@ class StackEnv(object):
         with open(env_file, "r") as raw_yaml_file:
             raw_yaml = raw_yaml_file.read()
         compiler_list_tag = "[insert-compiler-list]"
-        found_at_least_one_mpi_provider = False
+        mpi_compiler_list = []
         if compiler_list_tag in raw_yaml:
             packages_yaml_path = os.path.join(self.site_configs_dir(), "packages.yaml")
             if os.path.exists(packages_yaml_path):
                 with open(packages_yaml_path) as packages_yaml_file:
                     site_packages = syaml.load(packages_yaml_file)
                 compiler_mpi_spec_list = []
-                for mpi_provider in site_packages["packages"]["all"]["providers"]["mpi:"]:
+                try:
+                    mpi_provider_list = site_packages["packages"]["all"]["providers"]["mpi:"]
+                except:
+                    pass
+                for mpi_provider in mpi_provider_list:
                     provider_name = mpi_provider.split("@")[0]
                     for external_spec in site_packages["packages"][provider_name]["externals"]:
                         if mpi_provider+"%" in external_spec["spec"]:
                             compiler_mpi_spec_list.append("^"+external_spec["spec"])
-                            found_at_least_one_mpi_provider = True
-                compiler_list_to_insert = "["+",".join(compiler_mpi_spec_list)+"]"
-                yaml_with_compilers = raw_yaml.replace(compiler_list_tag, compiler_list_to_insert)
-                with open(env_file, "w") as updated_config_file:
-                    updated_config_file.write(yaml_with_compilers)
-         if not found_at_least_one_mpi_provider:
-             warnings.warn("No MPI providers found in this site's packages.yaml. Set compiler+MPI combinations manually in spack.yaml")
+                if mpi_provider_list:
+                    compiler_list_to_insert = "["+",".join(compiler_mpi_spec_list)+"]"
+                    yaml_with_compilers = raw_yaml.replace(compiler_list_tag, compiler_list_to_insert)
+                    with open(env_file, "w") as updated_config_file:
+                        updated_config_file.write(yaml_with_compilers)
+             if not mpi_provider_list:
+                 warnings.warn("No MPI providers found in this site's packages.yaml. Set compiler+MPI combinations manually in spack.yaml")
 
         ev.deactivate()
 
