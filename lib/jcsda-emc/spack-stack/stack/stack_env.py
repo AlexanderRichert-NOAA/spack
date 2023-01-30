@@ -230,7 +230,7 @@ class StackEnv(object):
                 provider_name = mpi_provider.split("@")[0]
                 for external_spec in site_packages["packages"][provider_name]["externals"]:
                     if mpi_provider+"%" in external_spec["spec"]:
-                        compiler_mpi_spec_list.append(external_spec["spec"])
+                        compiler_mpi_spec_list.append("^"+external_spec["spec"])
             compiler_list_to_insert = "["+",".join(compiler_mpi_spec_list)+"]"
             yaml_with_compilers = raw_yaml.replace(compiler_list_tag, compiler_list_to_insert)
             with open(env_file, "w") as updated_config_file:
