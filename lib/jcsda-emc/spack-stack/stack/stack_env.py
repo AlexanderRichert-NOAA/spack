@@ -3,6 +3,7 @@ import logging
 import os
 import shutil
 import subprocess
+import sys # remove me
 
 import spack
 import spack.config
@@ -213,21 +214,27 @@ class StackEnv(object):
         with env.write_transaction():
             env.write()
 
-        # If spack.yaml contains "[populated-by-create-env]" then look for that
-        # site's stack_compilers.txt file for a listing of compiler/MPI combos
-        # and perform the replacement. stack_compilers.txt should look like
-        # the following (note the square brackets):
-        # [%intel@1.2.3,%gcc@4.5.6 ^openmpi@4.1.4]
-        stack_compilers_path = os.path.join(self.site_configs_dir(), "stack_compilers.list")
+        # If spack.yaml contains "[populated-by-create-env]" then parse
+        # site/packages.yaml and make list of available compiler+MPI combos.
         with open(env_file, "r") as raw_yaml_file:
             raw_yaml = raw_yaml_file.read()
         compiler_list_tag = "[populated-by-create-env]"
         if compiler_list_tag in raw_yaml:
-            with open(stack_compilers_path, "r") as compiler_list_file:
-                compiler_list = compiler_list_file.read().strip()
-                yaml_with_compilers = raw_yaml.replace(compiler_list_tag, compiler_list)
-            with open(env_file, "w") as new_yaml_file:
-                new_yaml_file.write(yaml_with_compilers)
+            packages_yaml_path = os.path.join(self.site_configs_dir(), "packages.yaml")
+            assert os.path.exists(packages_yaml_path),\
+                f"{packages_yaml_path} not found but '{compiler_list_tag}' is in use!"
+            with open(packages_yaml_path) as packages_yaml_file:
+                site_packages = syaml.load(packages_yaml_file)
+            compiler_mpi_spec_list = []
+            for mpi_provider in site_packages["packages"]["all"]["providers"]["mpi:"]:
+                provider_name = mpi_provider.split("@")[0]
+                for external_spec in site_packages["packages"][provider_name]["externals"]:
+                    if mpi_provider+"%" in external_spec["spec"]:
+                        compiler_mpi_spec_list.append(external_spec["spec"])
+            compiler_list_to_insert = "["+",".join(compiler_mpi_spec_list)+"]"
+            yaml_with_compilers = raw_yaml.replace(compiler_list_tag, compiler_list_to_insert)
+            with open(env_file, "w") as updated_config_file:
+                updated_config_file.write(yaml_with_compilers)
 
         ev.deactivate()
 
