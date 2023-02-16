@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
+import glob
 import re
 
 from spack.package import *
@@ -21,7 +22,7 @@ class UfsWeatherModel(CMakePackage):
 
     maintainers = ["t-brown", "AlexanderRichert-NOAA"]
 
-    version("develop", branch="develop", submodules=True, commit="ea0b6e4")
+    version("develop", branch="develop", submodules=True)
     version("2.0.0", tag="ufs-v2.0.0", submodules=True)
     version("1.1.0", tag="ufs-v1.1.0", submodules=True)
 
@@ -122,6 +123,7 @@ class UfsWeatherModel(CMakePackage):
     depends_on("ip", when="@develop")
     depends_on("netcdf-c~parallel-netcdf+mpi", when="@develop")
     depends_on("parallelio+fortran~pnetcdf~shared", when="@develop")
+    depends_on("python@3:", when="@develop")
     with when("@develop app=S2SA"):
         depends_on("mapl")
         depends_on("gftl-shared")
@@ -201,13 +203,16 @@ class UfsWeatherModel(CMakePackage):
                 "CMakeLists.txt",
             )
 
-        # Fix ESMF capitalization/-lEMSF issue when using GOCART:
-        if self.spec.satisfies("@develop") and any(
-            ["app=" + app in self.spec for app in ["S2SA", "S2SWA", "ATMAERO"]]
-        ):
-            filter_file(r"NOT TARGET esmf", r"NOT TARGET ESMF", "WW3/model/src/CMakeLists.txt")
-            filter_file(r"PUBLIC esmf\)", "PUBLIC ESMF)", "WW3/model/src/CMakeLists.txt")
+        # Fix ESMF capitalization/-lESMF issue when using GOCART:
+        app = self.spec.variants["app"].value
+        if self.spec.satisfies("@develop") and app in ["S2SA", "S2SWA", "ATMAERO"]:
             filter_file(r"\(esmf ", r"(ESMF ", "CMakeModules/Modules/FindESMF.cmake")
+            if app=="S2SWA":
+                filter_file(r"NOT TARGET esmf", r"NOT TARGET ESMF", "WW3/model/src/CMakeLists.txt")
+                filter_file(r"PUBLIC esmf\)", "PUBLIC ESMF)", "WW3/model/src/CMakeLists.txt")
+            filelist = glob.glob("GOCART/**/CMakeLists.txt", recursive=True)
+            for filepath in filelist:
+                filter_file("\besmf\b", "ESMF", filepath)
 
     @run_after("install")
     def install_additional_files(self):
