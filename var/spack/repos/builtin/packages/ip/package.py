@@ -37,6 +37,8 @@ class Ip(CMakePackage):
     )
     variant("tests", default=False, description="Build tests of the library")
 
+    requires("precision=d", when="+tests precision=4")
+
     depends_on("sp")
     depends_on("pfunit", when="@3.3.3 +tests")
 
