@@ -36,19 +36,13 @@ class Udunits(AutotoolsPackage):
 
     variant("shared", default=True, description="Build shared library")
     variant(
-        "pic",
-        default=True,
-        description="Enable position-independent code (PIC)",
-        when="~shared",
+        "pic", default=True, description="Enable position-independent code (PIC)", when="~shared"
     )
 
     @property
     def libs(self):
         return find_libraries(
-            "libudunits2",
-            root=self.prefix,
-            recursive=True,
-            shared=self.spec.satisfies("+shared")
+            "libudunits2", root=self.prefix, recursive=True, shared=self.spec.satisfies("+shared")
         )
 
     def configure_args(self):
