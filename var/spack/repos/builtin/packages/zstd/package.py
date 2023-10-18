@@ -52,11 +52,7 @@ class Zstd(CMakePackage, MakefilePackage):
         values=any_combination_of("zlib", "lz4", "lzma"),
         description="Enable support for additional compression methods in programs",
     )
-    variant(
-        "pic",
-        default=True,
-        description="Enable position-independent code (PIC)",
-    )
+    variant("pic", default=True, description="Enable position-independent code (PIC)")
 
     depends_on("zlib", when="compression=zlib")
     depends_on("lz4", when="compression=lz4")
