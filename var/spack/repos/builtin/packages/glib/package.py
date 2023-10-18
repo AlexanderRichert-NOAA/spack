@@ -310,6 +310,12 @@ class MesonBuilder(BaseBuilder, spack.build_systems.meson.MesonBuilder):
                     args.append("-Diconv=external")
                 else:
                     args.append("-Diconv=gnu")
+
+        if self.spec.satisfies("^gettext ~shared"):
+            libs = self.spec["iconv"].libs.search_flags + " " + self.spec["iconv"].libs.link_flags
+            args.append(f"-Dc_link_args={libs}")
+            args.append(f"-Dcpp_link_args={libs}")
+
         return args
 
 
