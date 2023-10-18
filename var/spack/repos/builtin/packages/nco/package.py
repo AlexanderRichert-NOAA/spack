@@ -66,6 +66,10 @@ class Nco(AutotoolsPackage):
             config_args.append("CFLAGS=-O1")
             config_args.append("CXXFLAGS=-O1")
 
+        ncconfig = which("nc-config")
+        nc_libs = ncconfig("--static", "--libs", output=str).strip()
+        config_args.append(f"LIBS={nc_libs}")
+
         return config_args
 
     def setup_build_environment(self, env):
