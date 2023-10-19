@@ -126,12 +126,23 @@ class MesonBuilder(spack.build_systems.meson.MesonBuilder, SetupEnvironment):
     def meson_args(self):
         graphite2 = "enabled" if self.pkg.spec.satisfies("+graphite2") else "disabled"
         coretext = "enabled" if self.pkg.spec.satisfies("+coretext") else "disabled"
-        return [
+        meson_args = [
             # disable building of gtk-doc files following #9885 and #9771
             "-Ddocs=disabled",
             "-Dgraphite2={0}".format(graphite2),
             "-Dcoretext={0}".format(coretext),
         ]
+        libs = []
+        pc = which("pkg-config")
+        deps = {"zlib": "~shared", "bzip": "~shared", "libpng": "libs=static", "cairo": "~shared"}
+        for dep in deps.keys():
+            if self.spec.satisfies(f"^{dep} {deps[dep]}"):
+                libs.append(pc(dep, "--static", "--libs", output=str).strip())
+        if libs:
+            meson_args.append("-Dc_link_args=%s" % " ".join(libs))
+            meson_args.append("-Dcpp_link_args=%s" % " ".join(libs))
+
+        return meson_args
 
 
 class AutotoolsBuilder(spack.build_systems.autotools.AutotoolsBuilder, SetupEnvironment):
@@ -148,29 +159,13 @@ class AutotoolsBuilder(spack.build_systems.autotools.AutotoolsBuilder, SetupEnvi
         args.extend(self.with_or_without("graphite2"))
         args.extend(self.with_or_without("coretext"))
 
-        ldflags = []
         libs = []
-        for lib in ["bzip2", "zlib", "libpng"]:
-            spec = self.spec[lib]
-            if spec.satisfies("+shared") or spec.satisfies("libs=shared"):
-                continue
-            ldflags.append(spec.libs.ld_flags)
-            libs.append(spec.libs.link_flags)
-        cairo = self.spec["cairo"]
-        if cairo.satisfies("~shared"):
-            if cairo.satisfies("+fc"):
-                ldflags.append("-L%s" % cairo["fontconfig"].prefix.lib)
-                libs.append("-lfontconfig")
-            if cairo.satisfies("+ft"):
-                ldflags.append("-L%s" % cairo["freetype"].prefix.lib)
-                libs.append("-lfreetype")
-            if cairo.satisfies("+png"):
-                ldflags.append("-L%s" % cairo["libpng"].prefix.lib)
-                libs.append("-lpng")
-            ldflags.append("-L%s" % cairo["pixman"].prefix.lib)
-            libs.append("-lpixman-1")
-        if ldflags:
-            args.append("LDFLAGS=%s" % " ".join(ldflags))
+        pc = which("pkg-config")
+        deps = {"zlib": "~shared", "bzip": "~shared", "libpng": "libs=static", "cairo": "~shared"}
+        for dep in deps.keys():
+            if self.spec.satisfies(f"^{dep} {deps[dep]}"):
+                libs.append(pc(dep, "--static", "--libs", output=str).strip())
+        if libs:
             args.append("LIBS=%s" % " ".join(libs))
 
         return args
