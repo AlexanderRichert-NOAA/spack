@@ -63,7 +63,7 @@ class UfsUtils(CMakePackage):
     depends_on("netcdf-fortran")
     depends_on("sfcio")
     depends_on("sigio")
-    depends_on("sp")
+    depends_on("sp", when="^ip@:4")
     depends_on("w3emc")
     depends_on("zlib-api")
 
