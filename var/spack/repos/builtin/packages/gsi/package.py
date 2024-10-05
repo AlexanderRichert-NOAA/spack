@@ -9,8 +9,7 @@ from spack.package import *
 class Gsi(CMakePackage):
     """Gridpoint Statistical Interpolation"""
 
-    homepage = "https://www.example.com"
-    url = "gsi"
+    homepage = "https://github.com/NOAA-EMC/GSI"
     git = "https://github.com/NOAA-EMC/GSI"
 
     maintainers("AlexanderRichert-NOAA")
