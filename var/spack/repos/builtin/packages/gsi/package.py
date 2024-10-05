@@ -17,8 +17,7 @@ class Gsi(CMakePackage):
 
     license("LGPL-3.0-only", checked_by="AlexanderRichert-NOAA")
 
-    version("develop", branch="develop", submodules=True)
-    version("rrfs-v1.0.0", branch="release/rrfs.v1.0.0", submodules=True)
+    version("develop", branch="develop")
 
     variant("gsi", default=True)
     variant("enkf", default=True, when="+gsi")
@@ -48,6 +47,10 @@ class Gsi(CMakePackage):
         depends_on("wrf-io", when="gsi_mode=Regional")
 
 
+    def setup_build_environment(self, env):
+        if self.spec.satisfies("+fix"):
+            env.set("GSI_BINARY_SOURCE_DIR", join_path(self.stage.source_path, "gsifix"))
+
     def cmake_args(self):
         using_mkl = self.spec.satisfies("^[virtuals=lapack] intel-oneapi-mkl")
         args = [ 
@@ -55,6 +58,8 @@ class Gsi(CMakePackage):
             self.define_from_variant("BUILD_ENKF", "enkf"),
             self.define_from_variant("BUILD_GSDCLOUD", "gsdcloud"),
             self.define_from_variant("BUILD_MGBF", "mgbf"),
-            self.define("ENABLE_MKL", using_mkl)
+            self.define("ENABLE_MKL", using_mkl),
+            self.define("CMAKE_C_COMPILER", self.spec["mpi"].mpicc),
+            self.define("CMAKE_Fortran_COMPILER", self.spec["mpi"].mpifc),
         ]
         return args
