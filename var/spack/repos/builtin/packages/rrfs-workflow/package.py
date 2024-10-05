@@ -40,15 +40,18 @@ class RrfsWorkflow(CMakePackage):
     depends_on("ufs-weather-model ccpp_suites=FV3_GFS_v16", when="+aqm")
     depends_on("ufs-utils")
     depends_on("upp")
+    depends_on("gsi gsi_mode=Regional enkf_mode=FV3REG")
 
     root_cmakelists_dir = "sorc"
+
+    resource(name="gsi", git="https://github.com/NOAA-EMC/GSI", commit="529b6ea", destination="sorc", placement="gsi")
 
     def cmake_args(self):
         args = [
           self.define("BUILD_UFS", False),
           self.define("BUILD_UFS_UTILS", False),
           self.define("BUILD_UPP", False),
-          self.define("BUILD_GSI", False),
+          self.define("BUILD_GSI", True),
           self.define("BUILD_RRFS_UTILS", False),
           self.define("BUILD_AQM_UTILS", False),
         ]
