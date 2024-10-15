@@ -21,7 +21,7 @@ class AqmUtils(CMakePackage):
     version("develop", branch="develop")
 
     variant("post_stat", default=True)
-    variant("openmp4", default=False, description="Patch code to only use OpenMP v4.x-compatible functions")
+    variant("openmp4", default=True, description="Patch code to only use OpenMP v4.x-compatible functions")
 
     depends_on("mpi")
     depends_on("netcdf-fortran")
