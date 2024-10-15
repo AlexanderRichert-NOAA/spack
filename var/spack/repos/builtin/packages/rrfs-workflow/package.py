@@ -77,45 +77,5 @@ class RrfsWorkflow(CMakePackage):
         install_tree("versions", prefix.versions)
 
     def setup_run_environment(self, env):
-        if self.spec.satisfies("+uwm"):
-            env.set("FV3_EXEC_FP", self.spec["ufs-weather-model"].prefix.bin.ufs_weather_model)
         if self.spec.satisfies("+ufs_utils"):
             env.set("UFS_UTILS_DIR", self.spec["ufs-utils"].prefix)
-            env.set("CHGRES_CUBE_EXE", self.spec["ufs-utils"].prefix.bin.chgres_cube)
-            env.set("MAKE_HGRID_EXE", self.spec["ufs-utils"].prefix.bin.make_hgrid)
-            env.set("MAKE_SOLO_MOSAIC_EXE", self.spec["ufs-utils"].prefix.bin.make_solo_mosaic)
-            env.set("FILTER_TOPO_EXE", self.spec["ufs-utils"].prefix.bin.filter_topo)
-            env.set("FVCOM_TO_FV3_EXE", self.spec["ufs-utils"].prefix.bin.fvcom_to_FV3)
-            env.set("GLOBAL_EQUIV_RESOL_EXE", self.spec["ufs-utils"].prefix.bin.global_equiv_resol)
-            env.set("OROG_EXE", self.spec["ufs-utils"].prefix.bin.orog)
-            env.set("OROG_GSL_EXE", self.spec["ufs-utils"].prefix.bin.orog_gsl)
-            env.set("REGIONAL_ESG_GRID", self.spec["ufs-utils"].prefix.bin.regional_esg_grid)
-            env.set("SFC_CLIMO_GEN", self.spec["ufs-utils"].prefix.bin.sfc_climo_gen)
-            env.set("SHAVE", self.spec["ufs-utils"].prefix.bin.shave)
-        if self.spec.satisfies("+upp"):
-            env.set("UPP_EXE", join_path(self.spec["upp"].prefix.bin, "upp.x"))
-        if self.spec.satisfies("+gsi"):
-            env.set("GSI_EXE", join_path(self.spec["gsi"].prefix.bin, "gsi.x"))
-            env.set("ENKF_EXE", join_path(self.spec["gsi"].prefix.bin, "enkf.x"))
-            env.set("NC_DIAG_CAT_EXE", join_path(self.spec["gsi-ncdiag"].prefix.bin, "nc_diag_cat.x"))
-        if self.spec.satisfies("+rrfs_utl"):
-            env.set("ADJUST_SOILTQ_EXE", join_path(self.spec["rrfs-utl"].prefix.bin, "adjust_soiltq.exe"))
-            env.set("ENS_MEAN_RECENTER_P2DIO_EXE", join_path(self.spec["rrfs-utl"].prefix.bin, "ens_mean_recenter_P2DIO.exe"))
-            env.set("FV3LAM_NONVARCLDANA_EXE", join_path(self.spec["rrfs-utl"].prefix.bin, "fv3lam_nonvarcldana.exe"))
-            env.set("PROCESS_IMSSNOW_FV3LAM_EXE", join_path(self.spec["rrfs-utl"].prefix.bin, "process_imssnow_fv3lam.exe"))
-            env.set("PROCESS_LARCCLD_EXE", join_path(self.spec["rrfs-utl"].prefix.bin, "process_larccld.exe"))
-            env.set("PROCESS_LIGHTNING_EXE", join_path(self.spec["rrfs-utl"].prefix.bin, "process_Lightning.exe"))
-            env.set("PROCESS_METARCLD_EXE", join_path(self.spec["rrfs-utl"].prefix.bin, "process_metarcld.exe"))
-            env.set("PROCESS_NSSL_MOSAIC_EXE", join_path(self.spec["rrfs-utl"].prefix.bin, "process_NSSL_mosaic.exe"))
-            env.set("PROCESS_PM_EXE", join_path(self.spec["rrfs-utl"].prefix.bin, "process_pm.exe"))
-            env.set("PROCESS_UPDATESST_EXE", join_path(self.spec["rrfs-utl"].prefix.bin, "process_updatesst.exe"))
-            env.set("REF2TTEN_EXE", join_path(self.spec["rrfs-utl"].prefix.bin, "ref2tten.exe"))
-            env.set("RRFS_BUFR_EXE", join_path(self.spec["rrfs-utl"].prefix.bin, "rrfs_bufr.exe"))
-            env.set("RRFS_SNDP_EXE", join_path(self.spec["rrfs-utl"].prefix.bin, "rrfs_sndp.exe"))
-            env.set("RRFS_STNMLIST_EXE", join_path(self.spec["rrfs-utl"].prefix.bin, "rrfs_stnmlist.exe"))
-            env.set("UPDATE_BC_EXE", join_path(self.spec["rrfs-utl"].prefix.bin, "update_bc.exe"))
-            env.set("UPDATE_GVF_EXE", join_path(self.spec["rrfs-utl"].prefix.bin, "update_GVF.exe"))
-            env.set("UPDATE_ICE_EXE", join_path(self.spec["rrfs-utl"].prefix.bin, "update_ice.exe"))
-            env.set("USE_RAPHRRR_SFC_EXE", join_path(self.spec["rrfs-utl"].prefix.bin, "use_raphrrr_sfc.exe"))
-        if self.spec.satisfies("+aqm"):
-            env.set("GEFS2LBC_PARA", self.spec["aqm-utils"].prefix.bin.gefs2lbc_para)
