@@ -3,6 +3,8 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
+import os
+
 from spack.package import *
 
 
@@ -50,3 +52,8 @@ class RrfsUtl(CMakePackage):
         filter_file("==", ".eqv.", "rtma_minmaxtrh.fd/mintbg.fd/maxmin_ak.f")
         filter_file("==", ".eqv.", "rtma_minmaxtrh.fd/maxtbg.fd/maxmin_ak.f")
         filter_file(r"\(1x,D\)", "(1x,D10.3)", "rtma_esg_conversion.fd/rtma_regrid_esg2rll.F90")
+
+    def setup_dependent_run_environment(self, env, dependent_spec):
+        for exe_name in os.listdir(self.prefix.bin):
+            env_name = exe_name.replace("-", "_").replace(".", "_").upper()
+            env.set(env_name, join_path(self.prefix.bin, exe_name))
