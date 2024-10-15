@@ -234,3 +234,6 @@ class UfsWeatherModel(CMakePackage):
         ufs_dst = join_path(prefix.bin, "ufs_weather_model")
         install(ufs_src, ufs_dst)
         set_executable(ufs_dst)
+
+    def setup_dependent_run_environment(self, env, dependent_spec):
+        env.set("UFS_WEATHER_MODEL", join_path(self.prefix.bin, "ufs_weather_model"))
