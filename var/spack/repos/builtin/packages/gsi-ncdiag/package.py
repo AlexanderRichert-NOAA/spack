@@ -3,6 +3,8 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
+import os
+
 from spack.package import *
 
 
@@ -33,3 +35,8 @@ class GsiNcdiag(CMakePackage):
         args.append(self.define("CMAKE_Fortran_COMPILER", self.spec["mpi"].mpifc))
 
         return args
+
+    def setup_dependent_run_environment(self, env, dependent_spec):
+        for exe_name in os.listdir(self.prefix.bin):
+            env_name = exe_name.replace("-", "_").replace(".", "_").upper()
+            env.set(env_name, join_path(self.prefix.bin, exe_name))
