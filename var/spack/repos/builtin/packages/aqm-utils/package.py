@@ -3,6 +3,8 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
+import os
+
 from spack.package import *
 
 
@@ -46,3 +48,8 @@ class AqmUtils(CMakePackage):
         filter_file(r"^.+omp_get_num_teams.+$", "", "lib/lib.f90/print_omp_info.f90")
         filter_file(r"^.+omp_get_max_teams.+$", "", "lib/lib.f90/print_omp_info.f90")
         filter_file(r"^.+omp_display_env.+$", "", "lib/lib.f90/print_omp_info.f90")
+
+    def setup_dependent_run_environment(self, env, dependent_spec):
+        for exe_name in os.listdir(self.prefix.bin):
+            env_name = exe_name.replace("-", "_").replace(".", "_").upper()
+            env.set(env_name, join_path(self.prefix.bin, exe_name))
