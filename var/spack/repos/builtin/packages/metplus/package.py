@@ -1,4 +1,4 @@
-# Copyright 2013-2022 Lawrence Livermore National Security, LLC and other
+# Copyright 2013-2024 Lawrence Livermore National Security, LLC and other
 # Spack Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
@@ -13,10 +13,15 @@ class Metplus(Package):
     """
 
     homepage = "https://dtcenter.org/community-code/metplus"
+    git = "https://github.com/dtcenter/METplus"
     url = "https://github.com/dtcenter/METplus/archive/refs/tags/v4.1.0.tar.gz"
 
-    maintainers = ["kgerheiser"]
+    maintainers("AlexanderRichert-NOAA", "climbfuji")
 
+    version("develop", branch="develop")
+    version("5.1.0", sha256="e80df2d1059176a453b7991a9f123cb5a187cc7ba7f48a75313b92c7a0e68474")
+    version("5.0.1", sha256="0e22b4f6791496551d99f68247d382b2af02c90b34c172a64c6f060e774bdced")
+    version("5.0.0", sha256="59d519bd062559b4cece9f8672e2e282b200057bc77e2e0937414003d8f2dd50")
     version("4.1.4", sha256="6b8ac395f885807fcbeea07d814bbf97cec343566cb37bee088a3c5b65880ac7")
     version("4.1.1", sha256="81c03474f57cef6c7196d65fba6427365fd761578d99804c6c367f21a29b8ced")
     version("4.1.0", sha256="4e4d74be64c9c57b910824ebefff42eb3a9bb7e8e325d86b7a3f7fdd59d3e45d")

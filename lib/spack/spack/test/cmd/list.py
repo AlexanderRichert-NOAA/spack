@@ -1,11 +1,13 @@
-# Copyright 2013-2022 Lawrence Livermore National Security, LLC and other
+# Copyright 2013-2024 Lawrence Livermore National Security, LLC and other
 # Spack Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
+import os.path
 import sys
 from textwrap import dedent
 
+import spack.repo
 from spack.main import SpackCommand
 
 list = SpackCommand("list")
@@ -123,3 +125,28 @@ def test_list_tags(mock_packages):
     output = list("--tag", "tag3")
     assert "mpich\n" not in output
     assert "mpich2" in output
+
+
+def test_list_count(mock_packages):
+    output = list("--count")
+    assert int(output.strip()) == len(spack.repo.all_package_names())
+
+    output = list("--count", "py-")
+    assert int(output.strip()) == len(
+        [name for name in spack.repo.all_package_names() if "py-" in name]
+    )
+
+
+# def test_list_repos(mock_packages, builder_test_repository):
+def test_list_repos():
+    with spack.repo.use_repositories(
+        os.path.join(spack.paths.repos_path, "builtin.mock"),
+        os.path.join(spack.paths.repos_path, "builder.test"),
+    ):
+        total_pkgs = len(list().strip().split())
+        mock_pkgs = len(list("-r", "builtin.mock").strip().split())
+        builder_pkgs = len(list("-r", "builder.test").strip().split())
+        both_repos = len(list("-r", "builtin.mock", "-r", "builder.test").strip().split())
+
+        assert total_pkgs > mock_pkgs > builder_pkgs
+        assert both_repos == total_pkgs

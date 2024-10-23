@@ -1,4 +1,4 @@
-# Copyright 2013-2022 Lawrence Livermore National Security, LLC and other
+# Copyright 2013-2024 Lawrence Livermore National Security, LLC and other
 # Spack Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
@@ -60,7 +60,7 @@ def init(gnupghome=None, force=False):
 
     # Set the executable objects for "gpg" and "gpgconf"
     with spack.bootstrap.ensure_bootstrap_configuration():
-        spack.bootstrap.ensure_core_dependencies()
+        spack.bootstrap.ensure_gpg_in_path_or_raise()
         GPG, GPGCONF = _gpg(), _gpgconf()
 
     GPG.add_default_env("GNUPGHOME", GNUPGHOME)
@@ -334,7 +334,7 @@ def _verify_exe_or_raise(exe):
         raise SpackGPGError(msg)
 
     output = exe("--version", output=str)
-    match = re.search(r"^gpg(conf)? \(GnuPG\) (.*)$", output, re.M)
+    match = re.search(r"^gpg(conf)? \(GnuPG(?:/MacGPG2)?\) (.*)$", output, re.M)
     if not match:
         raise SpackGPGError('Could not determine "{0}" version'.format(exe.name))
 

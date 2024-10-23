@@ -1,4 +1,4 @@
-# Copyright 2013-2022 Lawrence Livermore National Security, LLC and other
+# Copyright 2013-2024 Lawrence Livermore National Security, LLC and other
 # Spack Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
@@ -14,18 +14,11 @@ from shutil import copy
 from typing import Dict, List
 
 import llnl.util.tty as tty
-from llnl.util.filesystem import (
-    is_nonsymlink_exe_with_shebang,
-    path_contains_subdirectory,
-)
 from llnl.util.lang import dedupe
 
 from spack.build_environment import dso_suffix, stat_suffix
 from spack.package import *
-from spack.util.environment import is_system_path
 from spack.util.prefix import Prefix
-
-is_windows = sys.platform == "win32"
 
 
 class Python(Package):
@@ -35,8 +28,9 @@ class Python(Package):
     url = "https://www.python.org/ftp/python/3.8.0/Python-3.8.0.tgz"
     list_url = "https://www.python.org/ftp/python/"
     list_depth = 1
+    tags = ["windows", "build-tools"]
 
-    maintainers = ["adamjstewart", "skosukhin", "scheibelp", "pradyunsg"]
+    maintainers("skosukhin", "scheibelp")
 
     phases = ["configure", "build", "install"]
 
@@ -44,12 +38,28 @@ class Python(Package):
     install_targets = ["install"]
     build_targets: List[str] = []
 
-    version("3.11.0", sha256="64424e96e2457abbac899b90f9530985b51eef2905951febd935f0e73414caeb")
+    license("0BSD")
+
+    version("3.12.1", sha256="d01ec6a33bc10009b09c17da95cc2759af5a580a7316b3a446eb4190e13f97b2")
+    version("3.12.0", sha256="51412956d24a1ef7c97f1cb5f70e185c13e3de1f50d131c0aac6338080687afb")
     version(
-        "3.10.8",
-        sha256="f400c3fb394b8bef1292f6dc1292c5fadc3533039a5bc0c3e885f3e16738029a",
+        "3.11.7",
+        sha256="068c05f82262e57641bd93458dfa883128858f5f4997aad7a36fd25b13b29209",
         preferred=True,
     )
+    version("3.11.6", sha256="c049bf317e877cbf9fce8c3af902436774ecef5249a29d10984ca3a37f7f4736")
+    version("3.11.5", sha256="a12a0a013a30b846c786c010f2c19dd36b7298d888f7c4bd1581d90ce18b5e58")
+    version("3.11.4", sha256="85c37a265e5c9dd9f75b35f954e31fbfc10383162417285e30ad25cc073a0d63")
+    version("3.11.3", sha256="1a79f3df32265d9e6625f1a0b31c28eb1594df911403d11f3320ee1da1b3e048")
+    version("3.11.2", sha256="2411c74bda5bbcfcddaf4531f66d1adc73f247f529aee981b029513aefdbf849")
+    version("3.11.1", sha256="baed518e26b337d4d8105679caf68c5c32630d702614fc174e98cb95c46bdfa4")
+    version("3.11.0", sha256="64424e96e2457abbac899b90f9530985b51eef2905951febd935f0e73414caeb")
+    version("3.10.13", sha256="698ec55234c1363bd813b460ed53b0f108877c7a133d48bde9a50a1eb57b7e65")
+    version("3.10.12", sha256="a43cd383f3999a6f4a7db2062b2fc9594fefa73e175b3aedafa295a51a7bb65c")
+    version("3.10.11", sha256="f3db31b668efa983508bd67b5712898aa4247899a346f2eb745734699ccd3859")
+    version("3.10.10", sha256="fba64559dde21ebdc953e4565e731573bb61159de8e4d4cedee70fb1196f610d")
+    version("3.10.9", sha256="4ccd7e46c8898f4c7862910a1703aa0e63525913a519abb2f55e26220a914d88")
+    version("3.10.8", sha256="f400c3fb394b8bef1292f6dc1292c5fadc3533039a5bc0c3e885f3e16738029a")
     version("3.10.7", sha256="1b2e4e2df697c52d36731666979e648beeda5941d0f95740aafbf4163e5cc126")
     version("3.10.6", sha256="848cb06a5caa85da5c45bd7a9221bb821e33fc2bdcba088c127c58fad44e6343")
     version("3.10.5", sha256="18f57182a2de3b0be76dfc39fdcfd28156bb6dd23e5f08696f7492e9e3d0bf2d")
@@ -58,6 +68,9 @@ class Python(Package):
     version("3.10.2", sha256="3c0ede893011319f9b0a56b44953a3d52c7abf9657c23fb4bc9ced93b86e9c97")
     version("3.10.1", sha256="b76117670e7c5064344b9c138e141a377e686b9063f3a8a620ff674fa8ec90d3")
     version("3.10.0", sha256="c4e0cbad57c90690cb813fb4663ef670b4d0f587d8171e2c42bd4c9245bd2758")
+    version("3.9.18", sha256="504ce8cfd59addc04c22f590377c6be454ae7406cb1ebf6f5a350149225a9354")
+    version("3.9.17", sha256="8ead58f669f7e19d777c3556b62fae29a81d7f06a7122ff9bc57f7dd82d7e014")
+    version("3.9.16", sha256="1ad539e9dbd2b42df714b69726e0693bc6b9d2d2c8e91c2e43204026605140c5")
     version("3.9.15", sha256="48d1ccb29d5fbaf1fb8f912271d09f7450e426d4dfe95978ef6aaada70ece4d8")
     version("3.9.14", sha256="9201836e2c16361b2b7408680502393737d44f227333fe2e5729c7d5f6041675")
     version("3.9.13", sha256="829b0d26072a44689a6b0810f5b4a3933ee2a0b8a4bfc99d7c5893ffd4f97c44")
@@ -74,6 +87,9 @@ class Python(Package):
     version("3.9.2", sha256="7899e8a6f7946748830d66739f2d8f2b30214dad956e56b9ba216b3de5581519")
     version("3.9.1", sha256="29cb91ba038346da0bd9ab84a0a55a845d872c341a4da6879f462e94c741f117")
     version("3.9.0", sha256="df796b2dc8ef085edae2597a41c1c0a63625ebd92487adaef2fed22b567873e8")
+    version("3.8.18", sha256="7c5df68bab1be81a52dea0cc2e2705ea00553b67107a301188383d7b57320b16")
+    version("3.8.17", sha256="def428fa6cf61b66bcde72e3d9f7d07d33b2e4226f04f9d6fce8384c055113ae")
+    version("3.8.16", sha256="71ca9d935637ed2feb59e90a368361dc91eca472a90acb1d344a2e8178ccaf10")
     version("3.8.15", sha256="924d46999df82aa2eaa1de5ca51d6800ffb56b4bf52486a28f40634e3362abc4")
     version("3.8.14", sha256="41f959c480c59211feb55d5a28851a56c7e22d02ef91035606ebb21011723c31")
     version("3.8.13", sha256="903b92d76354366b1d9c4434d0c81643345cef87c1600adfa36095d7b00eede4")
@@ -90,27 +106,94 @@ class Python(Package):
     version("3.8.2", sha256="e634a7a74776c2b89516b2e013dda1728c89c8149b9863b8cea21946daf9d561")
     version("3.8.1", sha256="c7cfa39a43b994621b245e029769e9126caa2a93571cee2e743b213cceac35fb")
     version("3.8.0", sha256="f1069ad3cae8e7ec467aa98a6565a62a48ef196cb8f1455a245a08db5e1792df")
-    version("3.7.15", sha256="cf2993798ae8430f3af3a00d96d9fdf320719f4042f039380dca79967c25e436")
-    version("3.7.14", sha256="82b2abf8978caa61a9011d166eede831b32de9cbebc0db8162900fa23437b709")
-    version("3.7.13", sha256="e405417f50984bc5870c7e7a9f9aeb93e9d270f5ac67f667a0cd3a09439682b5")
-    version("3.7.12", sha256="33b4daaf831be19219659466d12645f87ecec6eb21d4d9f9711018a7b66cce46")
-    version("3.7.11", sha256="b4fba32182e16485d0a6022ba83c9251e6a1c14676ec243a9a07d3722cd4661a")
-    version("3.7.10", sha256="c9649ad84dc3a434c8637df6963100b2e5608697f9ba56d82e3809e4148e0975")
-    version("3.7.9", sha256="39b018bc7d8a165e59aa827d9ae45c45901739b0bbb13721e4f973f3521c166a")
-    version("3.7.8", sha256="0e25835614dc221e3ecea5831b38fa90788b5389b99b675a751414c858789ab0")
-    version("3.7.7", sha256="8c8be91cd2648a1a0c251f04ea0bb4c2a5570feb9c45eaaa2241c785585b475a")
-    version("3.7.6", sha256="aeee681c235ad336af116f08ab6563361a0c81c537072c1b309d6e4050aa2114")
-    version("3.7.5", sha256="8ecc681ea0600bbfb366f2b173f727b205bb825d93d2f0b286bc4e58d37693da")
-    version("3.7.4", sha256="d63e63e14e6d29e17490abbe6f7d17afb3db182dbd801229f14e55f4157c4ba3")
-    version("3.7.3", sha256="d62e3015f2f89c970ac52343976b406694931742fbde2fed8d1ce8ebb4e1f8ff")
-    version("3.7.2", sha256="f09d83c773b9cc72421abba2c317e4e6e05d919f9bcf34468e192b6a6c8e328d")
-    version("3.7.1", sha256="36c1b81ac29d0f8341f727ef40864d99d8206897be96be73dc34d4739c9c9f06")
-    version("3.7.0", sha256="85bb9feb6863e04fb1700b018d9d42d1caac178559ffa453d7e6a436e259fd0d")
-
-    # Python 3.6.15 has been added back only to allow bootstrapping Spack on Python 3.6
     version(
-        "3.6.15",
-        sha256="54570b7e339e2cfd72b29c7e2fdb47c0b7b18b7412e61de5b463fc087c13b043",
+        "3.7.17",
+        sha256="fd50161bc2a04f4c22a0971ff0f3856d98b4bf294f89740a9f06b520aae63b49",
+        deprecated=True,
+    )
+    version(
+        "3.7.16",
+        sha256="0cf2da07fa464636755215415909e22eb1d058817af4824bc15af8390d05fb38",
+        deprecated=True,
+    )
+    version(
+        "3.7.15",
+        sha256="cf2993798ae8430f3af3a00d96d9fdf320719f4042f039380dca79967c25e436",
+        deprecated=True,
+    )
+    version(
+        "3.7.14",
+        sha256="82b2abf8978caa61a9011d166eede831b32de9cbebc0db8162900fa23437b709",
+        deprecated=True,
+    )
+    version(
+        "3.7.13",
+        sha256="e405417f50984bc5870c7e7a9f9aeb93e9d270f5ac67f667a0cd3a09439682b5",
+        deprecated=True,
+    )
+    version(
+        "3.7.12",
+        sha256="33b4daaf831be19219659466d12645f87ecec6eb21d4d9f9711018a7b66cce46",
+        deprecated=True,
+    )
+    version(
+        "3.7.11",
+        sha256="b4fba32182e16485d0a6022ba83c9251e6a1c14676ec243a9a07d3722cd4661a",
+        deprecated=True,
+    )
+    version(
+        "3.7.10",
+        sha256="c9649ad84dc3a434c8637df6963100b2e5608697f9ba56d82e3809e4148e0975",
+        deprecated=True,
+    )
+    version(
+        "3.7.9",
+        sha256="39b018bc7d8a165e59aa827d9ae45c45901739b0bbb13721e4f973f3521c166a",
+        deprecated=True,
+    )
+    version(
+        "3.7.8",
+        sha256="0e25835614dc221e3ecea5831b38fa90788b5389b99b675a751414c858789ab0",
+        deprecated=True,
+    )
+    version(
+        "3.7.7",
+        sha256="8c8be91cd2648a1a0c251f04ea0bb4c2a5570feb9c45eaaa2241c785585b475a",
+        deprecated=True,
+    )
+    version(
+        "3.7.6",
+        sha256="aeee681c235ad336af116f08ab6563361a0c81c537072c1b309d6e4050aa2114",
+        deprecated=True,
+    )
+    version(
+        "3.7.5",
+        sha256="8ecc681ea0600bbfb366f2b173f727b205bb825d93d2f0b286bc4e58d37693da",
+        deprecated=True,
+    )
+    version(
+        "3.7.4",
+        sha256="d63e63e14e6d29e17490abbe6f7d17afb3db182dbd801229f14e55f4157c4ba3",
+        deprecated=True,
+    )
+    version(
+        "3.7.3",
+        sha256="d62e3015f2f89c970ac52343976b406694931742fbde2fed8d1ce8ebb4e1f8ff",
+        deprecated=True,
+    )
+    version(
+        "3.7.2",
+        sha256="f09d83c773b9cc72421abba2c317e4e6e05d919f9bcf34468e192b6a6c8e328d",
+        deprecated=True,
+    )
+    version(
+        "3.7.1",
+        sha256="36c1b81ac29d0f8341f727ef40864d99d8206897be96be73dc34d4739c9c9f06",
+        deprecated=True,
+    )
+    version(
+        "3.7.0",
+        sha256="85bb9feb6863e04fb1700b018d9d42d1caac178559ffa453d7e6a436e259fd0d",
         deprecated=True,
     )
 
@@ -133,12 +216,12 @@ class Python(Package):
     # See https://legacy.python.org/dev/peps/pep-0394/
     variant(
         "pythoncmd",
-        default=not is_windows,
+        default=sys.platform != "win32",
         description="Symlink 'python3' executable to 'python' (not PEP 394 compliant)",
     )
 
     # Optional Python modules
-    variant("readline", default=not is_windows, description="Build readline module")
+    variant("readline", default=sys.platform != "win32", description="Build readline module")
     variant("ssl", default=True, description="Build ssl module")
     variant("sqlite3", default=True, description="Build sqlite3 module")
     variant("dbm", default=True, description="Build dbm module")
@@ -155,7 +238,8 @@ class Python(Package):
     variant("crypt", default=True, description="Build crypt module", when="@:3.12 platform=darwin")
     variant("crypt", default=True, description="Build crypt module", when="@:3.12 platform=cray")
 
-    if not is_windows:
+    if sys.platform != "win32":
+        depends_on("gmake", type="build")
         depends_on("pkgconfig@0.9.0:", type="build")
         depends_on("gettext +libxml2", when="+libxml2")
         depends_on("gettext ~libxml2", when="~libxml2")
@@ -174,9 +258,9 @@ class Python(Package):
         depends_on("sqlite@3.7.15:", when="@3.10:+sqlite3")
         depends_on("gdbm", when="+dbm")  # alternatively ndbm or berkeley-db
         depends_on("libnsl", when="+nis")
-        depends_on("zlib@1.1.3:", when="+zlib")
+        depends_on("zlib-api", when="+zlib")
         depends_on("bzip2", when="+bz2")
-        depends_on("xz", when="+lzma")
+        depends_on("xz libs=shared", when="+lzma")
         depends_on("expat", when="+pyexpat")
         depends_on("libffi", when="+ctypes")
         # https://docs.python.org/3/whatsnew/3.11.html#build-changes
@@ -201,7 +285,7 @@ class Python(Package):
     patch("python-3.7.2-distutils-C++.patch", when="@3.7.2")
     patch("python-3.7.3-distutils-C++.patch", when="@3.7.3")
     patch("python-3.7.4+-distutils-C++.patch", when="@3.7.4:3.10")
-    patch("python-3.7.4+-distutils-C++-testsuite.patch", when="@3.7.4:")
+    patch("python-3.7.4+-distutils-C++-testsuite.patch", when="@3.7.4:3.11")
     patch("python-3.11-distutils-C++.patch", when="@3.11.0:3.11")
     patch("cpython-windows-externals.patch", when="@:3.9.6 platform=windows")
     patch("tkinter-3.7.patch", when="@3.7 platform=darwin")
@@ -211,12 +295,12 @@ class Python(Package):
     patch("tkinter-3.10.patch", when="@3.10.0:3.10 ~tkinter")
     patch("tkinter-3.11.patch", when="@3.11.0:3.11 ~tkinter")
 
-    # Ensure that distutils chooses correct compiler option for RPATH on cray:
-    patch("cray-rpath-3.1.patch", when="@3 platform=cray")
+    # Ensure that distutils chooses correct compiler option for RPATH:
+    patch("rpath-non-gcc.patch", when="@:3.11")
 
     # Ensure that distutils chooses correct compiler option for RPATH on fj:
     patch("fj-rpath-3.1.patch", when="@:3.9.7,3.10.0 %fj")
-    patch("fj-rpath-3.9.patch", when="@3.9.8:3.9,3.10.1: %fj")
+    patch("fj-rpath-3.9.patch", when="@3.9.8:3.9,3.10.1:3.11 %fj")
 
     # Fixes build with the Intel compilers
     # https://github.com/python/cpython/pull/16717
@@ -232,13 +316,20 @@ class Python(Package):
     )
     conflicts("%nvhpc")
 
+    # https://bugs.python.org/issue45405
+    conflicts("@:3.7.12,3.8.0:3.8.12,3.9.0:3.9.7,3.10.0", when="%apple-clang@13:")
+
+    # See https://github.com/python/cpython/issues/106424
+    # datetime.now(timezone.utc) segfaults
+    conflicts("@3.9:", when="%oneapi@2022.2.1:2023")
+
     # Used to cache various attributes that are expensive to compute
     _config_vars: Dict[str, Dict[str, str]] = {}
 
     # An in-source build with --enable-optimizations fails for python@3.X
     build_directory = "spack-build"
 
-    executables = [r"^python[\d.]*[mw]?$"]
+    executables = [r"^python\d?$"]
 
     @classmethod
     def determine_version(cls, exe):
@@ -298,14 +389,15 @@ class Python(Package):
             variants += "~pyexpat"
 
         # Some variant names do not match module names
-        try:
-            python("-c", "import tkinter.tix", error=os.devnull)
-            variants += "+tix"
-        except ProcessError:
-            variants += "~tix"
+        if "+tkinter" in variants:
+            try:
+                python("-c", "import tkinter.tix", error=os.devnull)
+                variants += "+tix"
+            except ProcessError:
+                variants += "~tix"
 
         # Some modules are platform-dependent
-        if not is_windows:
+        if sys.platform != "win32":
             try:
                 python("-c", "import crypt", error=os.devnull)
                 variants += "+crypt"
@@ -352,6 +444,11 @@ class Python(Package):
             if spec.satisfies("%gcc") or spec.satisfies("%fj"):
                 env.unset("LC_ALL")
 
+        # https://github.com/python/cpython/issues/87275
+        if spec.satisfies("@:3.9.5 +optimizations %apple-clang"):
+            xcrun = Executable("/usr/bin/xcrun")
+            env.set("LLVM_AR", xcrun("-find", "ar", output=str).strip())
+
     def flag_handler(self, name, flags):
         # python 3.8 requires -fwrapv when compiled with intel
         if self.spec.satisfies("@3.8: %intel"):
@@ -361,7 +458,7 @@ class Python(Package):
         # Fix for following issues for python with aocc%3.2.0:
         # https://github.com/spack/spack/issues/29115
         # https://github.com/spack/spack/pull/28708
-        if self.spec.satisfies("%aocc@3.2.0", strict=True):
+        if self.spec.satisfies("%aocc@3.2.0"):
             if name == "cflags":
                 flags.extend(["-mllvm", "-disable-indvar-simplify=true"])
 
@@ -445,7 +542,8 @@ class Python(Package):
                 copy(lib, prefix)
             else:
                 copy(lib, prefix.DLLs)
-        static_libraries = glob.glob("%s\\*.lib")
+        static_libraries = glob.glob("%s\\*.lib" % build_root)
+        os.makedirs(prefix.libs, exist_ok=True)
         for lib in static_libraries:
             copy(lib, prefix.libs)
 
@@ -475,10 +573,14 @@ class Python(Package):
 
         if "+optimizations" in spec:
             config_args.append("--enable-optimizations")
-            config_args.append("--with-lto")
+            # Prefer thin LTO for faster compilation times.
+            if "@3.11.0: %clang@3.9:" in spec or "@3.11.0: %apple-clang@8:" in spec:
+                config_args.append("--with-lto=thin")
+            else:
+                config_args.append("--with-lto")
             config_args.append("--with-computed-gotos")
 
-        if spec.satisfies("@3.7 %intel", strict=True):
+        if spec.satisfies("@3.7 %intel"):
             config_args.append("--with-icc={0}".format(spack_cc))
 
         if "+debug" in spec:
@@ -537,6 +639,13 @@ class Python(Package):
         if cflags:
             config_args.append("CFLAGS={0}".format(" ".join(cflags)))
 
+        if spec["gettext"].satisfies("~shared"):
+            config_args.append(
+                "LIBS=-L{0} -L{1} -lintl -liconv".format(
+                    spec["gettext"].prefix.lib, spec["iconv"].prefix.lib
+                )
+            )
+
         return config_args
 
     def configure(self, spec, prefix):
@@ -545,7 +654,7 @@ class Python(Package):
         and an appropriately set prefix.
         """
         with working_dir(self.stage.source_path, create=True):
-            if is_windows:
+            if sys.platform == "win32":
                 pass
             else:
                 options = getattr(self, "configure_flag_args", [])
@@ -560,7 +669,7 @@ class Python(Package):
         # Windows builds use a batch script to drive
         # configure and build in one step
         with working_dir(self.stage.source_path):
-            if is_windows:
+            if sys.platform == "win32":
                 pcbuild_root = os.path.join(self.stage.source_path, "PCbuild")
                 builder_cmd = os.path.join(pcbuild_root, "build.bat")
                 try:
@@ -583,10 +692,11 @@ class Python(Package):
         :py:attr:``~.AutotoolsPackage.install_targets``
         """
         with working_dir(self.stage.source_path):
-            if is_windows:
+            if sys.platform == "win32":
                 self.win_installer(prefix)
             else:
-                make(*self.install_targets)
+                # See https://github.com/python/cpython/issues/102007
+                make(*self.install_targets, parallel=False)
 
     @run_after("install")
     def filter_compilers(self):
@@ -596,7 +706,7 @@ class Python(Package):
         If this isn't done, they'll have CC and CXX set to Spack's generic
         cc and c++. We want them to be bound to whatever compiler
         they were built with."""
-        if is_windows:
+        if sys.platform == "win32":
             return
         kwargs = {"ignore_absent": True, "backup": False, "string": True}
 
@@ -608,7 +718,7 @@ class Python(Package):
 
     @run_after("install")
     def symlink(self):
-        if is_windows:
+        if sys.platform == "win32":
             return
         spec = self.spec
         prefix = self.prefix
@@ -726,7 +836,7 @@ class Python(Package):
         # in that order if using python@3.11.0, for example.
         version = self.spec.version
         for ver in [version.up_to(2), version.up_to(1), ""]:
-            if not is_windows:
+            if sys.platform != "win32":
                 path = os.path.join(self.prefix.bin, "python{0}".format(ver))
             else:
                 path = os.path.join(self.prefix, "python{0}.exe".format(ver))
@@ -775,11 +885,11 @@ print(json.dumps(config))
 """
 
         dag_hash = self.spec.dag_hash()
-        lib_prefix = "lib" if not is_windows else ""
+        lib_prefix = "lib" if sys.platform != "win32" else ""
         if dag_hash not in self._config_vars:
             # Default config vars
             version = self.version.up_to(2)
-            if is_windows:
+            if sys.platform == "win32":
                 version = str(version).split(".")[0]
             config = {
                 # get_config_vars
@@ -790,6 +900,9 @@ print(json.dumps(config))
                 "INCLUDEPY": self.prefix.include.join("python{}").format(version),
                 "LIBDEST": self.prefix.lib.join("python{}").format(version),
                 "LIBDIR": self.prefix.lib,
+                "LIBPL": self.prefix.lib.join("python{0}")
+                .join("config-{0}-{1}")
+                .format(version, sys.platform),
                 "LDLIBRARY": "{}python{}.{}".format(lib_prefix, version, dso_suffix),
                 "LIBRARY": "{}python{}.{}".format(lib_prefix, version, stat_suffix),
                 "LDSHARED": "cc",
@@ -859,6 +972,10 @@ print(json.dumps(config))
         # in either lib or lib64, so we need to ask Python where its LIBDIR is.
         libdir = self.config_vars["LIBDIR"]
 
+        # Debian and derivatives use a triplet subdir under /usr/lib, LIBPL can be used
+        # to get the Python library directory
+        libpldir = self.config_vars["LIBPL"]
+
         # The system Python installation on macOS and Homebrew installations
         # install libraries into a Frameworks directory
         frameworkprefix = self.config_vars["PYTHONFRAMEWORKPREFIX"]
@@ -876,6 +993,7 @@ print(json.dumps(config))
 
         directories = [
             libdir,
+            libpldir,
             frameworkprefix,
             macos_developerdir,
             win_bin_dir,
@@ -895,9 +1013,9 @@ print(json.dumps(config))
     @property
     def libs(self):
         py_version = self.version.up_to(2)
-        if is_windows:
+        if sys.platform == "win32":
             py_version = str(py_version).replace(".", "")
-        lib_prefix = "lib" if not is_windows else ""
+        lib_prefix = "lib" if sys.platform != "win32" else ""
         # The values of LDLIBRARY and LIBRARY aren't reliable. Intel Python uses a
         # static binary but installs shared libraries, so sysconfig reports
         # libpythonX.Y.a but only libpythonX.Y.so exists. So we add our own paths, too.
@@ -914,18 +1032,14 @@ print(json.dumps(config))
             shared_libs = []
         else:
             shared_libs = [self.config_vars["LDLIBRARY"]]
-        shared_libs += [
-            "{}python{}.{}".format(lib_prefix, py_version, dso_suffix),
-        ]
+        shared_libs += ["{}python{}.{}".format(lib_prefix, py_version, dso_suffix)]
         # Like LDLIBRARY for Python on Mac OS, LIBRARY may refer to an un-linkable object
         file_extension_static = os.path.splitext(self.config_vars["LIBRARY"])[-1]
         if file_extension_static == "":
             static_libs = []
         else:
             static_libs = [self.config_vars["LIBRARY"]]
-        static_libs += [
-            "{}python{}.{}".format(lib_prefix, py_version, stat_suffix),
-        ]
+        static_libs += ["{}python{}.{}".format(lib_prefix, py_version, stat_suffix)]
 
         # The +shared variant isn't reliable, as `spack external find` currently can't
         # detect it. If +shared, prefer the shared libraries, but check for static if
@@ -943,8 +1057,8 @@ print(json.dumps(config))
                 return lib
 
         raise spack.error.NoLibrariesError(
-            "Unable to find {} libraries with the following names:".format(self.name),
-            "\n".join(candidates),
+            "Unable to find {} libraries with the following names:\n\n* ".format(self.name)
+            + "\n* ".join(candidates)
         )
 
     @property
@@ -969,8 +1083,8 @@ print(json.dumps(config))
                 break
         else:
             raise spack.error.NoHeadersError(
-                "Unable to locate {} headers in any of these locations:".format(self.name),
-                "\n".join(candidates),
+                "Unable to locate {} headers in any of these locations:\n\n* ".format(self.name)
+                + "\n* ".join(candidates)
             )
 
         headers.directories = [os.path.dirname(config_h)]
@@ -1005,7 +1119,7 @@ print(json.dumps(config))
         path = self.config_vars["platlib"]
         if path.startswith(prefix):
             return path.replace(prefix, "")
-        return os.path.join("lib64", "python{}".format(self.version.up_to(2)), "site-packages")
+        return os.path.join("lib64", f"python{self.version.up_to(2)}", "site-packages")
 
     @property
     def purelib(self):
@@ -1025,7 +1139,7 @@ print(json.dumps(config))
         path = self.config_vars["purelib"]
         if path.startswith(prefix):
             return path.replace(prefix, "")
-        return os.path.join("lib", "python{}".format(self.version.up_to(2)), "site-packages")
+        return os.path.join("lib", f"python{self.version.up_to(2)}", "site-packages")
 
     @property
     def include(self):
@@ -1049,41 +1163,10 @@ print(json.dumps(config))
             return path.replace(prefix, "")
         return os.path.join("include", "python{}".format(self.version.up_to(2)))
 
-    def setup_run_environment(self, env):
-        env.prepend_path("CPATH", os.pathsep.join(self.spec["python"].headers.directories))
-
     def setup_dependent_build_environment(self, env, dependent_spec):
         """Set PYTHONPATH to include the site-packages directory for the
         extension and any other python extensions it depends on.
         """
-
-        # Ensure the current Python is first in the PATH
-        path = os.path.dirname(self.command.path)
-        if not is_system_path(path):
-            env.prepend_path("PATH", path)
-
-        # Add installation prefix to PYTHONPATH, needed to run import tests
-        prefixes = set()
-        if dependent_spec.package.extends(self.spec):
-            prefixes.add(dependent_spec.prefix)
-
-        # Add direct build/run/test dependencies to PYTHONPATH,
-        # needed to build the package and to run import tests
-        for direct_dep in dependent_spec.dependencies(deptype=("build", "run", "test")):
-            if direct_dep.package.extends(self.spec):
-                prefixes.add(direct_dep.prefix)
-
-                # Add recursive run dependencies of all direct dependencies,
-                # needed by direct dependencies at run-time
-                for indirect_dep in direct_dep.traverse(deptype="run"):
-                    if indirect_dep.package.extends(self.spec):
-                        prefixes.add(indirect_dep.prefix)
-
-        for prefix in prefixes:
-            # Packages may be installed in platform-specific or platform-independent
-            # site-packages directories
-            for directory in {self.platlib, self.purelib}:
-                env.prepend_path("PYTHONPATH", os.path.join(prefix, directory))
 
         # We need to make sure that the extensions are compiled and linked with
         # the Spack wrapper. Paths to the executables that are used for these
@@ -1130,93 +1213,48 @@ print(json.dumps(config))
                 # invoked directly (no change would be required in that case
                 # because Spack arranges for the Spack ld wrapper to be the
                 # first instance of "ld" in PATH).
-                new_link = config_link.replace(
-                    " {0} ".format(config_compile), " {0} ".format(new_compile)
-                )
+                new_link = config_link.replace(f" {config_compile} ", f" {new_compile} ")
 
             # There is logic in the sysconfig module that is sensitive to the
             # fact that LDSHARED is set in the environment, therefore we export
             # the variable only if the new value is different from what we got
             # from the sysconfigdata file:
-            if config_link != new_link and not is_windows:
+            if config_link != new_link and sys.platform != "win32":
                 env.set(link_var, new_link)
 
     def setup_dependent_run_environment(self, env, dependent_spec):
         """Set PYTHONPATH to include the site-packages directory for the
         extension and any other python extensions it depends on.
         """
-        for d in dependent_spec.traverse(deptype=("run"), root=True):
-            if d.package.extends(self.spec):
-                # Packages may be installed in platform-specific or platform-independent
-                # site-packages directories
-                for directory in {self.platlib, self.purelib}:
-                    env.prepend_path("PYTHONPATH", os.path.join(d.prefix, directory))
+        if not dependent_spec.package.extends(self.spec) or dependent_spec.dependencies(
+            "python-venv"
+        ):
+            return
+
+        # Packages may be installed in platform-specific or platform-independent site-packages
+        # directories
+        for directory in {self.platlib, self.purelib}:
+            env.prepend_path("PYTHONPATH", os.path.join(dependent_spec.prefix, directory))
 
     def setup_dependent_package(self, module, dependent_spec):
         """Called before python modules' install() methods."""
-
         module.python = self.command
-
         module.python_include = join_path(dependent_spec.prefix, self.include)
         module.python_platlib = join_path(dependent_spec.prefix, self.platlib)
         module.python_purelib = join_path(dependent_spec.prefix, self.purelib)
 
-        # Make the site packages directory for extensions
-        if dependent_spec.package.is_extension:
-            mkdirp(module.python_platlib)
-            mkdirp(module.python_purelib)
-
-    def add_files_to_view(self, view, merge_map, skip_if_exists=True):
-        bin_dir = self.spec.prefix.bin if sys.platform != "win32" else self.spec.prefix
-        for src, dst in merge_map.items():
-            if not path_contains_subdirectory(src, bin_dir):
-                view.link(src, dst, spec=self.spec)
-            elif not os.path.islink(src):
-                copy(src, dst)
-                if is_nonsymlink_exe_with_shebang(src):
-                    filter_file(
-                        self.spec.prefix,
-                        os.path.abspath(view.get_projection_for_spec(self.spec)),
-                        dst,
-                        backup=False,
-                    )
-            else:
-                # orig_link_target = os.path.realpath(src) is insufficient when
-                # the spack install tree is located at a symlink or a
-                # descendent of a symlink. What we need here is the real
-                # relative path from the python prefix to src
-                # TODO: generalize this logic in the link_tree object
-                #    add a method to resolve a link relative to the link_tree
-                #    object root.
-                realpath_src = os.path.realpath(src)
-                realpath_prefix = os.path.realpath(self.spec.prefix)
-                realpath_rel = os.path.relpath(realpath_src, realpath_prefix)
-                orig_link_target = os.path.join(self.spec.prefix, realpath_rel)
-
-                new_link_target = os.path.abspath(merge_map[orig_link_target])
-                view.link(new_link_target, dst, spec=self.spec)
-
-    def remove_files_from_view(self, view, merge_map):
-        bin_dir = self.spec.prefix.bin if not is_windows else self.spec.prefix
-        for src, dst in merge_map.items():
-            if not path_contains_subdirectory(src, bin_dir):
-                view.remove_file(src, dst)
-            else:
-                os.remove(dst)
-
-    def test(self):
+    def test_hello_world(self):
+        """run simple hello world program"""
         # do not use self.command because we are also testing the run env
-        exe = self.spec["python"].command.name
+        python = self.spec["python"].command
 
-        # test hello world
         msg = "hello world!"
-        reason = "test: running {0}".format(msg)
-        options = ["-c", 'print("{0}")'.format(msg)]
-        self.run_test(exe, options=options, expected=[msg], installed=True, purpose=reason)
+        out = python("-c", f'print("{msg}")', output=str.split, error=str.split)
+        assert msg in out
 
-        # checks import works and executable comes from the spec prefix
-        reason = "test: checking import and executable"
-        options = ["-c", "import sys; print(sys.executable)"]
-        self.run_test(
-            exe, options=options, expected=[self.spec.prefix], installed=True, purpose=reason
-        )
+    def test_import_executable(self):
+        """ensure import of installed executable works"""
+        python = self.spec["python"].command
+
+        out = python("-c", "import sys; print(sys.executable)", output=str.split, error=str.split)
+        assert self.spec.prefix in out

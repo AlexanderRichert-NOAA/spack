@@ -1,6 +1,6 @@
---- a/shapely/geos.py	2022-08-24 13:21:33.000000000 -0600
-+++ b/shapely/geos.py	2022-08-24 13:23:54.000000000 -0600
-@@ -88,14 +88,21 @@
+--- a/shapely/geos.py	2023-11-29 20:34:39.000000000 -0700
++++ b/shapely/geos.py	2023-11-29 20:35:39.000000000 -0700
+@@ -88,14 +88,26 @@
          if len(geos_pyinstaller_so) >= 1:
              _lgeos = CDLL(geos_pyinstaller_so[0])
              LOG.debug("Found GEOS DLL: %r, using it.", _lgeos)
@@ -20,7 +20,12 @@
 -        ]
 +        # Use geos installation if spack geos module is loaded
 +        if 'geos_ROOT' in os.environ:
-+            alt_paths = [os.path.join(os.environ['geos_ROOT'], 'lib', 'libgeos_c.dylib')]
++            alt_paths = [
++                os.path.join(os.environ['geos_ROOT'], 'lib', 'libgeos_c.so'),
++                os.path.join(os.environ['geos_ROOT'], 'lib64', 'libgeos_c.so'),
++                os.path.join(os.environ['geos_ROOT'], 'lib', 'libgeos_c.so.1'),
++                os.path.join(os.environ['geos_ROOT'], 'lib64', 'libgeos_c.so.1'),
++            ]
 +        else:
 +            alt_paths = [
 +                'libgeos_c.so.1',
@@ -29,7 +34,7 @@
          _lgeos = load_dll('geos_c', fallbacks=alt_paths)
  
      # ctypes.CDLL(None) internally calls dlopen(NULL), and as the dlopen
-@@ -119,10 +126,12 @@
+@@ -119,10 +131,12 @@
          else:
              _lgeos = CDLL(geos_whl_dylib)
              LOG.debug("Found GEOS DLL: %r, using it.", _lgeos)
@@ -46,7 +51,7 @@
      else:
          if hasattr(sys, 'frozen'):
              try:
-@@ -139,6 +148,9 @@
+@@ -139,6 +153,9 @@
                  if hasattr(sys, '_MEIPASS'):
                      alt_paths.append(
                          os.path.join(sys._MEIPASS, 'libgeos_c.1.dylib'))

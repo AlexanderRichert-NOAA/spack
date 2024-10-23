@@ -1,4 +1,4 @@
-# Copyright 2013-2022 Lawrence Livermore National Security, LLC and other
+# Copyright 2013-2024 Lawrence Livermore National Security, LLC and other
 # Spack Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
@@ -29,7 +29,7 @@ class LuaImplPackage(MakefilePackage):
     lua_version_override = None
 
     def __init__(self, *args, **kwargs):
-        super(LuaImplPackage, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.lua_dir_name = "lua"
         pass
 
@@ -53,7 +53,7 @@ class LuaImplPackage(MakefilePackage):
         return os.path.join("share", self.lua_dir_name, self.__verdir())
 
     # luarocks needs unzip for some packages (e.g. lua-luaposix)
-    depends_on("unzip", type="run")
+    depends_on("unzip", type=("build", "run"))
 
     # luarocks needs a fetcher (curl/wget), unfortunately I have not found
     # how to force a choice for curl or wget, but curl seems the default.
@@ -154,9 +154,7 @@ class LuaImplPackage(MakefilePackage):
 
     def setup_run_environment(self, env):
         env.prepend_path(
-            "LUA_PATH",
-            os.path.join(self.spec.prefix, self.lua_share_dir, "?.lua"),
-            separator=";",
+            "LUA_PATH", os.path.join(self.spec.prefix, self.lua_share_dir, "?.lua"), separator=";"
         )
         env.prepend_path(
             "LUA_PATH",
@@ -164,9 +162,7 @@ class LuaImplPackage(MakefilePackage):
             separator=";",
         )
         env.prepend_path(
-            "LUA_PATH",
-            os.path.join(self.spec.prefix, self.lua_lib_dir, "?.lua"),
-            separator=";",
+            "LUA_PATH", os.path.join(self.spec.prefix, self.lua_lib_dir, "?.lua"), separator=";"
         )
         env.prepend_path(
             "LUA_PATH",
@@ -174,9 +170,7 @@ class LuaImplPackage(MakefilePackage):
             separator=";",
         )
         env.prepend_path(
-            "LUA_CPATH",
-            os.path.join(self.spec.prefix, self.lua_lib_dir, "?.so"),
-            separator=";",
+            "LUA_CPATH", os.path.join(self.spec.prefix, self.lua_lib_dir, "?.so"), separator=";"
         )
 
     @property
@@ -206,6 +200,7 @@ class Lua(LuaImplPackage):
     homepage = "https://www.lua.org"
     url = "https://www.lua.org/ftp/lua-5.3.4.tar.gz"
 
+    version("5.4.6", sha256="7d5ea1b9cb6aa0b59ca3dde1c6adcb57ef83a1ba8e5432c0ecd06bf439b3ad88")
     version("5.4.4", sha256="164c7849653b80ae67bec4b7473b884bf5cc8d2dca05653475ec2ed27b9ebf61")
     version("5.4.3", sha256="f8612276169e3bfcbcfb8f226195bfc6e466fe13042f1076cbde92b7ec96bbfb")
     version("5.4.2", sha256="11570d97e9d7303c0a59567ed1ac7c648340cd0db10d5fd594c09223ef2f524f")

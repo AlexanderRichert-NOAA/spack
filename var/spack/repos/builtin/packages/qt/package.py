@@ -1,4 +1,4 @@
-# Copyright 2013-2022 Lawrence Livermore National Security, LLC and other
+# Copyright 2013-2024 Lawrence Livermore National Security, LLC and other
 # Spack Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
@@ -27,10 +27,19 @@ class Qt(Package):
     url = "https://download.qt.io/archive/qt/5.15/5.15.2/single/qt-everywhere-src-5.15.2.tar.xz"
     list_url = "https://download.qt.io/archive/qt/"
     list_depth = 3
-    maintainers = ["sethrj"]
+    maintainers("sethrj")
 
     phases = ["configure", "build", "install"]
 
+    license("LGPL-3.0-only")
+
+    version("5.15.14", sha256="fdd3a4f197d2c800ee0085c721f4bef60951cbda9e9c46e525d1412f74264ed7")
+    version("5.15.13", sha256="9550ec8fc758d3d8d9090e261329700ddcd712e2dda97e5fcfeabfac22bea2ca")
+    version("5.15.12", sha256="93f2c0889ee2e9cdf30c170d353c3f829de5f29ba21c119167dee5995e48ccce")
+    version("5.15.11", sha256="7426b1eaab52ed169ce53804bdd05dfe364f761468f888a0f15a308dc1dc2951")
+    version("5.15.10", sha256="b545cb83c60934adc9a6bbd27e2af79e5013de77d46f5b9f5bb2a3c762bf55ca")
+    version("5.15.9", sha256="26d5f36134db03abe4a6db794c7570d729c92a3fc1b0bf9b1c8f86d0573cd02f")
+    version("5.15.8", sha256="776a9302c336671f9406a53bd30b8e36f825742b2ec44a57c08217bff0fa86b9")
     version("5.15.7", sha256="8a71986676a3f37a198a9113acedbfd5bc5606a459b6b85816d951458adbe9a0")
     version("5.15.6", sha256="ebc77d27934b70b25b3dc34fbec7c4471eb451848e891c42b32409ea30fe309f")
     version("5.15.5", sha256="5a97827bdf9fd515f43bc7651defaf64fecb7a55e051c79b8f80510d0e990f06")
@@ -58,12 +67,15 @@ class Qt(Package):
     variant("gtk", default=False, description="Build with gtkplus.")
     variant("gui", default=True, description="Build the Qt GUI module and dependencies")
     variant("opengl", default=False, description="Build with OpenGL support.")
+    variant("location", default=False, when="+opengl", description="Build the Qt Location module.")
     variant("phonon", default=False, description="Build with phonon support.")
     variant("shared", default=True, description="Build shared libraries.")
     variant("sql", default=True, description="Build with SQL support.")
     variant("ssl", default=True, description="Build with OpenSSL support.")
     variant("tools", default=True, description="Build tools, including Qt Designer.")
     variant("webkit", default=False, description="Build the Webkit extension")
+
+    provides("qmake")
 
     # Patches for qt@3
     patch("qt3-accept.patch", when="@3")
@@ -132,8 +144,25 @@ class Qt(Package):
         working_dir="qtwebsockets",
         when="@5.14: %gcc@11:",
     )
+    # patch that adds missing `#include <cstdint>` in several files
+    # required for gcc 13 (even though the original patch was developed for gcc 10)
+    # (see https://gcc.gnu.org/gcc-13/porting_to.html)
+    patch(
+        "https://src.fedoraproject.org/rpms/qt5-qtlocation/raw/b6d99579de9ce5802c592b512a9f644a5e4690b9/f/qtlocation-gcc10.patch",
+        sha256="78c70fbd0c74031c5f0f1f5990e0b4214fc04c5073c67ce1f23863373932ec86",
+        working_dir="qtlocation",
+        when="@5.15.10: %gcc@10:",
+    )
     # https://github.com/microsoft/vcpkg/issues/21055
     patch("qt5-macos12.patch", working_dir="qtbase", when="@5.14: %apple-clang@13:")
+    # https://codereview.qt-project.org/c/qt/qtbase/+/503172
+    patch(
+        "https://github.com/qt/qtbase/commit/cdf64b0e47115cc473e1afd1472b4b09e130b2a5.patch?full_index=1",
+        sha256="2b881ffb2808f8fa79f51f8bec71be91a886bcdc59b1d7b6986cba26ed18d1d3",
+        working_dir="qtbase",
+        when="@5.12.1: %apple-clang@15:",
+    )
+    conflicts("%apple-clang@15:", when="@:5.12.0")
 
     # Spack path substitution uses excessively long paths that exceed the hard-coded
     # limit of 256 used by teh generated code with the prefix path as string literals
@@ -154,7 +183,7 @@ class Qt(Package):
     depends_on("libmng")
     depends_on("libtiff")
     depends_on("libxml2")
-    depends_on("zlib")
+    depends_on("zlib-api")
     depends_on("freetype", when="+gui")
     depends_on("gtkplus", when="+gtk")
     depends_on("sqlite+column_metadata", when="+sql", type=("build", "run"))
@@ -232,6 +261,11 @@ class Qt(Package):
     # https://doc.qt.io/qt-5.14/supported-platforms.html
     conflicts("%gcc@:4", when="@5.14:")
 
+    # Compiling with oneAPI compilers icx, icpx requires patching
+    # This has only been tested for 5.15.14 so far
+    conflicts("%oneapi", when="@:5.15.13")
+    patch("qt51514-oneapi.patch", when="@5.15.14: %oneapi")
+
     # Non-macOS dependencies and special macOS constraints
     if MACOS_VERSION is None:
         with when("+gui"):
@@ -258,13 +292,16 @@ class Qt(Package):
             msg="Apple Silicon requires a very new version of qt",
         )
 
-    use_xcode = True
-
     # Mapping for compilers/systems in the QT 'mkspecs'
     compiler_mapping = {
         "intel": ("icc",),
+        # This only works because we apply patch "qt51514-oneapi.patch"
+        # above that replaces calls to "icc" with calls to "icx" in
+        # qtbase/mkspecs/*
+        "oneapi": ("icc",),
         "apple-clang": ("clang-libc++", "clang"),
         "clang": ("clang-libc++", "clang"),
+        "aocc": ("clang-libc++", "clang"),
         "fj": ("clang",),
         "gcc": ("g++",),
     }
@@ -329,6 +366,11 @@ class Qt(Package):
                 llvm_path = "/spack-disable-llvm"
             env.set("LLVM_INSTALL_DIR", llvm_path)
 
+        if self.spec.satisfies("+ssl ^openssl~shared"):
+            pc = which("pkg-config")
+            ssl_flags = pc("openssl", "--libs-only-l", "--static", output=str).strip()
+            env.set("OPENSSL_LIBS", ssl_flags)
+
     def setup_run_environment(self, env):
         env.set("QTDIR", self.prefix)
         env.set("QTINC", self.prefix.inc)
@@ -342,7 +384,7 @@ class Qt(Package):
         env.prepend_path("QT_PLUGIN_PATH", self.prefix.plugins)
 
     def setup_dependent_package(self, module, dependent_spec):
-        module.qmake = Executable(join_path(self.spec.prefix.bin, "qmake"))
+        module.qmake = Executable(self.spec.prefix.bin.qmake)
 
     def get_mkspec(self):
         """Determine the mkspecs root directory and QT platform."""
@@ -374,10 +416,11 @@ class Qt(Package):
     # webkit requires libintl (gettext), but does not test for it
     # correctly, so add it here.
     def flag_handler(self, name, flags):
-        if "+webkit" in self.spec and name == "ldlibs":
-            flags.append("-lintl")
-
-        return (flags, None, None)
+        if self.name == "ldlibs":
+            spec = self.spec
+            if "+webkit" in spec and "intl" in spec["gettext"].libs.names:
+                flags.append("-lintl")
+        return self.inject_flags(name, flags)
 
     @when("@4 platform=darwin")
     def patch(self):
@@ -492,7 +535,7 @@ class Qt(Package):
         )
 
     @when("@4: %fj")
-    def patch(self):
+    def patch(self):  # noqa: F811
         (mkspec_dir, platform) = self.get_mkspec()
 
         conf = os.path.join(mkspec_dir, "common", "clang.conf")
@@ -505,6 +548,16 @@ class Qt(Package):
             conf_file = os.path.join(mkspec_dir, platform, "qmake.conf")
             with open(conf_file, "a") as f:
                 f.write("QMAKE_CXXFLAGS += -std=gnu++98\n")
+
+    @when("~shared")
+    @run_before("configure")
+    def patch(self):  # noqa: F811
+        filter_file(
+            "libs-only-L", "libs-only-L --static", "qtbase/mkspecs/features/qt_configure.prf"
+        )
+        filter_file(
+            "libs-only-l", "libs-only-l --static", "qtbase/mkspecs/features/qt_configure.prf"
+        )
 
     def _dep_appender_factory(self, config_args):
         spec = self.spec
@@ -576,16 +629,17 @@ class Qt(Package):
             config_args.append("-no-openvg")
         else:
             # FIXME: those could work for other versions
+            use_spack_dep("libtiff", "tiff")
             use_spack_dep("libpng")
             use_spack_dep("jpeg", "libjpeg")
-            use_spack_dep("zlib")
+            use_spack_dep("zlib-api", "zlib")
 
         if "@:5.5" in spec:
             config_args.extend(
                 [
                     # NIS is deprecated in more recent glibc,
                     # but qt-5.6.3 does not recognize this option
-                    "-no-nis",
+                    "-no-nis"
                 ]
             )
 
@@ -683,9 +737,12 @@ class Qt(Package):
                 # Errors on bluetooth even when bluetooth is disabled...
                 # at least on apple-clang%12
                 config_args.extend(["-skip", "connectivity"])
-        elif version < Version("5.15") and "+gui" in spec:
+        elif "+gui" in spec:
             # Linux-only QT5 dependencies
-            config_args.append("-system-xcb")
+            if version < Version("5.9.9"):
+                config_args.append("-system-xcb")
+            else:
+                config_args.append("-xcb")
             if "+opengl" in spec:
                 config_args.append("-I{0}/include".format(spec["libx11"].prefix))
                 config_args.append("-I{0}/include".format(spec["xproto"].prefix))
@@ -705,12 +762,7 @@ class Qt(Package):
                 config_args.append("-no-feature-getentropy")
 
         if "~webkit" in spec:
-            config_args.extend(
-                [
-                    "-skip",
-                    "webengine" if version >= Version("5.6") else "qtwebkit",
-                ]
-            )
+            config_args.extend(["-skip", "webengine" if version >= Version("5.6") else "qtwebkit"])
 
         if spec.satisfies("@5.7"):
             config_args.extend(["-skip", "virtualkeyboard"])
@@ -721,6 +773,10 @@ class Qt(Package):
             # https://wiki.qt.io/QtWayland
             config_args.extend(["-skip", "wayland"])
 
+        if "~location" in spec:
+            if version >= Version("5.15"):
+                config_args.extend(["-skip", "qtlocation"])
+
         if "~opengl" in spec:
             config_args.extend(["-skip", "multimedia"])
             config_args.extend(["-skip", "qt3d"])
@@ -730,9 +786,6 @@ class Qt(Package):
 
             if version >= Version("5.14"):
                 config_args.extend(["-skip", "qtquick3d"])
-
-            if version >= Version("5.15"):
-                config_args.extend(["-skip", "qtlocation"])
 
         else:
             # v5.0: qt3d uses internal-only libassimp
@@ -750,12 +803,7 @@ class Qt(Package):
             # These options are only valid if 'multimedia' is enabled, i.e.
             # +opengl is selected. Force them to be off on macOS, but let other
             # platforms decide for themselves.
-            config_args.extend(
-                [
-                    "-no-pulseaudio",
-                    "-no-alsa",
-                ]
-            )
+            config_args.extend(["-no-pulseaudio", "-no-alsa"])
 
         if spec.satisfies("platform=darwin target=aarch64:"):
             # https://www.qt.io/blog/qt-on-apple-silicon

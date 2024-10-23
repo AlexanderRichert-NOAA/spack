@@ -1,4 +1,4 @@
-# Copyright 2013-2022 Lawrence Livermore National Security, LLC and other
+# Copyright 2013-2024 Lawrence Livermore National Security, LLC and other
 # Spack Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
@@ -16,6 +16,8 @@ class BlisBase(MakefilePackage):
     of the library in the 'amdblis' package.
     """
 
+    maintainers("jeffhammond")
+
     depends_on("python@2.7:2.8,3.4:", type=("build", "run"))
 
     variant(
@@ -26,6 +28,7 @@ class BlisBase(MakefilePackage):
         multi=False,
     )
 
+    variant("ilp64", default=False, description="Force 64-bit Fortran native integers")
     variant("blas", default=True, description="BLAS compatibility")
     variant("cblas", default=True, description="CBLAS compatibility")
     variant(
@@ -51,6 +54,11 @@ class BlisBase(MakefilePackage):
     def configure_args(self):
         spec = self.spec
         config_args = ["--enable-threading={0}".format(spec.variants["threads"].value)]
+
+        if "+ilp64" in spec:
+            config_args.append("--blas-int-size=64")
+        else:
+            config_args.append("--blas-int-size=32")
 
         if "+cblas" in spec:
             config_args.append("--enable-cblas")
@@ -112,6 +120,8 @@ class Blis(BlisBase):
     homepage = "https://github.com/flame/blis"
     url = "https://github.com/flame/blis/archive/0.7.0.tar.gz"
     git = "https://github.com/flame/blis.git"
+
+    license("BSD-3-Clause")
 
     version("master", branch="master")
     version("0.9.0", sha256="1135f664be7355427b91025075562805cdc6cc730d3173f83533b2c5dcc2f308")

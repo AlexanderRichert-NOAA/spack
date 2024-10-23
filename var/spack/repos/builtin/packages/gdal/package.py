@@ -1,4 +1,4 @@
-# Copyright 2013-2022 Lawrence Livermore National Security, LLC and other
+# Copyright 2013-2024 Lawrence Livermore National Security, LLC and other
 # Spack Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
@@ -28,8 +28,23 @@ class Gdal(CMakePackage, AutotoolsPackage, PythonExtension):
     list_url = "https://download.osgeo.org/gdal/"
     list_depth = 1
 
-    maintainers = ["adamjstewart"]
+    maintainers("adamjstewart")
 
+    license("MIT")
+
+    version("3.8.5", sha256="e8b4df2a8a7d25272f867455c0c230459545972f81f0eff2ddbf6a6f60dcb1e4")
+    version("3.8.4", sha256="0c53ced95d29474236487202709b49015854f8e02e35e44ed0f4f4e12a7966ce")
+    version("3.8.3", sha256="ae2d160f65016e208eca34ff14490ec4511f1fa03fd386ac130449d15e82929d")
+    version("3.8.2", sha256="dc2921ee1cf7a5c0498e94d15fb9ab9c9689c296363a1d021fc3293dd242b4db")
+    version("3.8.1", sha256="75a20b23879bfa3d8c0db68e1d6f8b924f7f9d97f5fed089b01a72e404293900")
+    version("3.8.0", sha256="ec0f78d9dc32352aeac6edc9c3b27a991b91f9dc6f92c452207d84431c58757d")
+    version("3.7.3", sha256="e0a6f0c453ea7eb7c09967f50ac49426808fcd8f259dbc9888140eb69d7ffee6")
+    version("3.7.2", sha256="40c0068591d2c711c699bbb734319398485ab169116ac28005d8302f80b923ad")
+    version("3.7.1", sha256="9297948f0a8ba9e6369cd50e87c7e2442eda95336b94d2b92ef1829d260b9a06")
+    version("3.7.0", sha256="af4b26a6b6b3509ae9ccf1fcc5104f7fe015ef2110f5ba13220816398365adce")
+    version("3.6.4", sha256="889894cfff348c04ac65b462f629d03efc53ea56cf04de7662fbe81a364e3df1")
+    version("3.6.3", sha256="3cccbed883b1fb99b913966aa3a650ad930e7c3afc714f5823f9754176ee49ea")
+    version("3.6.2", sha256="35f40d2e08061b342513cdcddc2b997b3814ef8254514f0ef1e8bc7aa56cf681")
     version("3.6.1", sha256="68f1c03547ff7152289789db7f67ee634167c9b7bfec4872b88406b236f9c230")
     version("3.6.0", sha256="f7afa4aa8d32d0799e011a9f573c6a67e9471f78e70d3d0d0b45b45c8c0c1a94")
     version("3.5.3", sha256="d32223ddf145aafbbaec5ccfa5dbc164147fb3348a3413057f9b1600bb5b3890")
@@ -83,6 +98,7 @@ class Gdal(CMakePackage, AutotoolsPackage, PythonExtension):
     version("2.0.0", sha256="91704fafeea2349c5e268dc1e2d03921b3aae64b05ee01d59fdfc1a6b0ffc061")
 
     # Optional dependencies
+    variant("archive", default=False, when="@3.7:", description="Optional for vsi7z VFS driver")
     variant(
         "armadillo",
         default=False,
@@ -130,9 +146,11 @@ class Gdal(CMakePackage, AutotoolsPackage, PythonExtension):
     variant("kdu", default=False, description="Required for JP2KAK and JPIPKAK drivers")
     variant("kea", default=False, description="Required for KEA driver")
     variant("lerc", default=False, when="@2.4:", description="Required for LERC compression")
+    variant("libaec", default=False, when="@3.8:", description="Optional for GRIB driver")
     variant("libcsf", default=False, description="Required for PCRaster driver")
     variant("libkml", default=False, description="Required for LIBKML driver")
     variant("liblzma", default=False, description="Required for Zarr driver")
+    variant("libqb3", default=False, when="@3.6:", description="Required for MRF driver")
     variant(
         "libxml2", default=False, description="Required for XML validation in many OGR drivers"
     )
@@ -183,7 +201,7 @@ class Gdal(CMakePackage, AutotoolsPackage, PythonExtension):
     )
     variant("pcidsk", default=False, description="Required for PCIDSK driver")
     variant(
-        "pcre", default=False, description="Required for REGEXP operator in drivers using SQLite3"
+        "pcre2", default=False, description="Required for REGEXP operator in drivers using SQLite3"
     )
     variant("pdfium", default=False, when="@2.1:", description="Possible backend for PDF driver")
     variant("png", default=True, description="Required for PNG driver")
@@ -194,14 +212,13 @@ class Gdal(CMakePackage, AutotoolsPackage, PythonExtension):
         default=False,
         description="Required for PostgreSQL and PostGISRaster drivers",
     )
-    variant("qb3", default=False, when="@3.6:", description="Required for MRF driver")
     variant(
         "qhull",
         default=False,
         when="@2.1:",
         description="Used for linear interpolation of gdal_grid",
     )
-    variant("rasdaman", default=False, description="Required for Rasdaman driver")
+    variant("rasdaman", default=False, when="@:3.6", description="Required for Rasdaman driver")
     variant(
         "rasterlite2", default=False, when="@2.2:", description="Required for RasterLite2 driver"
     )
@@ -227,16 +244,17 @@ class Gdal(CMakePackage, AutotoolsPackage, PythonExtension):
     variant("perl", default=False, when="@:3.4", description="Build Perl bindings")
     variant("php", default=False, when="@:2.3", description="Build PHP bindings")
 
+    variant("shared", default=True, description="Build shared libraries")
+    variant("pic", default=False, description="Enable position-independent code (PIC)")
+
     # Build system
     build_system(
-        conditional("cmake", when="@3.5:"),
-        conditional("autotools", when="@:3.5"),
-        default="cmake",
+        conditional("cmake", when="@3.5:"), conditional("autotools", when="@:3.5"), default="cmake"
     )
 
     with when("build_system=cmake"):
+        generator("ninja")
         depends_on("cmake@3.9:", type="build")
-        depends_on("ninja", type="build")
 
     with when("build_system=autotools"):
         depends_on("gmake", type="build")
@@ -247,7 +265,7 @@ class Gdal(CMakePackage, AutotoolsPackage, PythonExtension):
     depends_on("proj@:6", when="@2.5:2")
     depends_on("proj@:5", when="@2.4")
     depends_on("proj@:4", when="@:2.3")
-    depends_on("zlib")
+    depends_on("zlib-api")
     depends_on("libtiff@4:", when="@3:")
     depends_on("libtiff@3.6.0:")  # 3.9.0+ needed to pass testsuite
     depends_on("libgeotiff@1.5:", when="@3:")
@@ -257,6 +275,7 @@ class Gdal(CMakePackage, AutotoolsPackage, PythonExtension):
     depends_on("json-c@0.12.1", when="@:2.2")
 
     # Optional dependencies
+    depends_on("libarchive", when="+archive")
     depends_on("armadillo", when="+armadillo")
     depends_on("blas", when="+armadillo")
     depends_on("lapack", when="+armadillo")
@@ -286,7 +305,8 @@ class Gdal(CMakePackage, AutotoolsPackage, PythonExtension):
     depends_on("libheif@1.1:", when="+heif")
     depends_on("hdf", when="+hdf4")
     depends_on("hdf5+cxx", when="+hdf5")
-    depends_on("hdf5@:1.12", when="@:3.4.1 +hdf5")
+    depends_on("hdf5@:1.13", when="@:3.5 +hdf5")
+    depends_on("hdf5@:1.12", when="@:3.4 +hdf5")
     depends_on("hadoop", when="+hdfs")
     depends_on("iconv", when="+iconv")
     # depends_on('idb', when='+idb')
@@ -297,6 +317,7 @@ class Gdal(CMakePackage, AutotoolsPackage, PythonExtension):
     # depends_on('kakadu', when='+kdu')
     depends_on("kealib", when="+kea")
     depends_on("lerc", when="+lerc")
+    depends_on("libaec", when="+libaec")
     # depends_on('libcsf', when='+libcsf')
     depends_on("libkml@1.3:", when="+libkml")
     depends_on("xz", when="+liblzma")
@@ -324,8 +345,8 @@ class Gdal(CMakePackage, AutotoolsPackage, PythonExtension):
     depends_on("oracle-instant-client", when="+oracle")
     depends_on("parquet-cpp", when="+parquet")
     # depends_on('pcidsk', when='+pcidsk')
-    depends_on("pcre2", when="@3.5:+pcre")
-    depends_on("pcre", when="@:3.4+pcre")
+    depends_on("pcre2", when="@3.5:+pcre2")
+    depends_on("pcre", when="@:3.4+pcre2")
     # depends_on('pdfium', when='+pdfium')
     depends_on("libpng", when="+png")
     # depends_on('podofo', when='+podofo')
@@ -335,7 +356,7 @@ class Gdal(CMakePackage, AutotoolsPackage, PythonExtension):
     depends_on("poppler@:0.71", when="@:2.4 +poppler")
     depends_on("poppler@:21", when="@:3.4.1 +poppler")
     depends_on("postgresql", when="+postgresql")
-    depends_on("qb3", when="+qb3")
+    depends_on("qb3", when="+libqb3")
     depends_on("qhull", when="+qhull")
     depends_on("qhull@2015:", when="@3.5:+qhull")
     depends_on("qhull@:2020.1", when="@:3.3+qhull")
@@ -364,6 +385,8 @@ class Gdal(CMakePackage, AutotoolsPackage, PythonExtension):
     depends_on("python@3.6:", type=("build", "link", "run"), when="@3.3:+python")
     depends_on("python@2.0:", type=("build", "link", "run"), when="@3.2:+python")
     depends_on("python", type=("build", "link", "run"), when="+python")
+    # Uses distutils
+    depends_on("python@:3.11", type=("build", "link", "run"), when="@:3.4+python")
     # swig/python/setup.py
     depends_on("py-setuptools@:57", type="build", when="@:3.2+python")  # needs 2to3
     depends_on("py-setuptools", type="build", when="+python")
@@ -379,6 +402,9 @@ class Gdal(CMakePackage, AutotoolsPackage, PythonExtension):
     depends_on("swig", type="build", when="+perl")
     depends_on("php", type=("build", "link", "run"), when="+php")
     depends_on("swig", type="build", when="+php")
+
+    # https://gdal.org/development/rfc/rfc88_googletest.html
+    depends_on("googletest@1.10:", type="test")
 
     # https://trac.osgeo.org/gdal/wiki/SupportedCompilers
     msg = "GDAL requires C++11 support"
@@ -434,6 +460,14 @@ class Gdal(CMakePackage, AutotoolsPackage, PythonExtension):
         sha256="9f9824296e75b34b3e78284ec772a5ac8f8ba92c17253ea9ca242caf766767ce",
     )
 
+    # https://github.com/spack/spack/issues/41299
+    # ensures the correct build specific libproj is used with cmake builds (gdal >=3.5.0)
+    patch(
+        "https://patch-diff.githubusercontent.com/raw/OSGeo/gdal/pull/8964.patch?full_index=1",
+        when="@3.5:3.8",
+        sha256="52459dc9903ced5005ba81515762a55cd829d8f5420607405c211c4a77c2bf79",
+    )
+
     executables = ["^gdal-config$"]
 
     @classmethod
@@ -460,11 +494,10 @@ class Gdal(CMakePackage, AutotoolsPackage, PythonExtension):
     def patch(self):
         if "+java platform=darwin" in self.spec:
             filter_file("linux", "darwin", "swig/java/java.opt", string=True)
+            filter_file("-lazy-ljvm", "-ljvm", "configure", string=True)
 
 
 class CMakeBuilder(CMakeBuilder):
-    generator = "Ninja"
-
     def cmake_args(self):
         # https://gdal.org/build_hints.html
         args = [
@@ -476,7 +509,12 @@ class CMakeBuilder(CMakeBuilder):
             self.define("GDAL_USE_JSONC", True),
             self.define("GDAL_USE_TIFF", True),
             self.define("GDAL_USE_ZLIB", True),
+            # zlib-ng + deflate64 doesn't compile (heavily relies on zlib)
+            # but since zlib-ng is faster than zlib, it deflate shouldn't
+            # be necessary.
+            self.define("ENABLE_DEFLATE64", "zlib-ng" not in self.spec),
             # Optional dependencies
+            self.define_from_variant("GDAL_USE_ARCHIVE", "archive"),
             self.define_from_variant("GDAL_USE_ARMADILLO", "armadillo"),
             self.define_from_variant("GDAL_USE_ARROW", "arrow"),
             self.define_from_variant("GDAL_USE_BASISU", "basisu"),
@@ -506,9 +544,11 @@ class CMakeBuilder(CMakeBuilder):
             self.define_from_variant("GDAL_USE_KDU", "kdu"),
             self.define_from_variant("GDAL_USE_KEA", "kea"),
             self.define_from_variant("GDAL_USE_LERC", "lerc"),
+            self.define_from_variant("GDAL_USE_LIBAEC", "libaec"),
             self.define_from_variant("GDAL_USE_LIBCSF", "libcsf"),
             self.define_from_variant("GDAL_USE_LIBKML", "libkml"),
             self.define_from_variant("GDAL_USE_LIBLZMA", "liblzma"),
+            self.define_from_variant("GDAL_USE_LIBQB3", "libqb3"),
             self.define_from_variant("GDAL_USE_LIBXML2", "libxml2"),
             self.define_from_variant("GDAL_USE_LURATECH", "luratech"),
             self.define_from_variant("GDAL_USE_LZ4", "lz4"),
@@ -528,13 +568,12 @@ class CMakeBuilder(CMakeBuilder):
             self.define_from_variant("GDAL_USE_OPENSSL", "openssl"),
             self.define_from_variant("GDAL_USE_ORACLE", "oracle"),
             self.define_from_variant("GDAL_USE_PARQUET", "parquet"),
-            self.define_from_variant("GDAL_USE_PCRE2", "pcre"),
+            self.define_from_variant("GDAL_USE_PCRE2", "pcre2"),
             self.define_from_variant("GDAL_USE_PDFIUM", "pdfium"),
             self.define_from_variant("GDAL_USE_PNG", "png"),
             self.define_from_variant("GDAL_USE_PODOFO", "podofo"),
             self.define_from_variant("GDAL_USE_POPPLER", "poppler"),
             self.define_from_variant("GDAL_USE_POSTGRESQL", "postgresql"),
-            self.define_from_variant("GDAL_USE_LIBQB3", "qb3"),
             self.define_from_variant("GDAL_USE_QHULL", "qhull"),
             self.define_from_variant("GDAL_USE_RASDAMAN", "rasdaman"),
             self.define_from_variant("GDAL_USE_RASTERLITE2", "rasterlite2"),
@@ -552,6 +591,8 @@ class CMakeBuilder(CMakeBuilder):
             self.define_from_variant("BUILD_JAVA_BINDINGS", "java"),
             self.define_from_variant("BUILD_CSHARP_BINDINGS", "csharp"),
         ]
+        args.append(self.define_from_variant("BUILD_SHARED_LIBS", "shared"))
+        args.append(self.define_from_variant("CMAKE_POSITION_INDEPENDENT_CODE", "pic"))
 
         # Remove empty strings
         args = [arg for arg in args if arg]
@@ -599,7 +640,7 @@ class AutotoolsBuilder(AutotoolsBuilder):
             "--with-geotiff={}".format(self.spec["libgeotiff"].prefix),
             "--with-libjson-c={}".format(self.spec["json-c"].prefix),
             "--with-libtiff={}".format(self.spec["libtiff"].prefix),
-            "--with-libz={}".format(self.spec["zlib"].prefix),
+            "--with-libz={}".format(self.spec["zlib-api"].prefix),
             # Optional dependencies
             self.with_or_without("armadillo", package="armadillo"),
             self.with_or_without("blosc", package="c-blosc"),
@@ -628,7 +669,6 @@ class AutotoolsBuilder(AutotoolsBuilder):
             self.with_or_without("hdf4", package="hdf"),
             self.with_or_without("hdf5", package="hdf5"),
             self.with_or_without("hdfs", package="hadoop"),
-            self.with_or_without("libiconv-prefix", variant="iconv", package="iconv"),
             self.with_or_without("idb", package="idb"),
             self.with_or_without("ingres", package="ingres"),
             self.with_or_without("jasper", package="jasper"),
@@ -657,7 +697,7 @@ class AutotoolsBuilder(AutotoolsBuilder):
             self.with_or_without("crypto", variant="openssl", package="openssl"),
             self.with_or_without("oci", variant="oracle", package="oracle-instant-client"),
             self.with_or_without("pcidsk", package="pcidsk"),
-            self.with_or_without("pcre"),
+            self.with_or_without("pcre", variant="pcre2"),
             self.with_or_without("pdfium", package="pdfium"),
             self.with_or_without("png", package="libpng"),
             self.with_or_without("podofo", package="podofo"),
@@ -682,6 +722,14 @@ class AutotoolsBuilder(AutotoolsBuilder):
             self.with_or_without("perl"),
             self.with_or_without("php"),
         ]
+        if "+iconv" in self.spec:
+            if self.spec["iconv"].name == "libiconv":
+                args.append(f"--with-libiconv-prefix={self.spec['iconv'].prefix}")
+            else:
+                args.append("--without-libiconv-prefix")
+
+        args.extend(self.enable_or_disable("shared"))
+        args.append(self.with_or_without("pic"))
 
         # Renamed or modified flags
         if self.spec.satisfies("@3:"):
@@ -713,15 +761,38 @@ class AutotoolsBuilder(AutotoolsBuilder):
         else:
             args.append(self.with_or_without("dwgdirect", variant="teigha", package="teigha"))
 
+        ldflags = []
+        libs = []
+
         if "+hdf4" in self.spec:
             hdf4 = self.spec["hdf"]
-            if "+external-xdr" in hdf4 and hdf4["rpc"].name != "libc":
+            if "+external-xdr" in hdf4 and hdf4["rpc"].name == "libtirpc":
                 args.append("LIBS=" + hdf4["rpc"].libs.link_flags)
+
+        deps = []
+        if self.spec["proj"].satisfies("~shared"):
+            deps += ["sqlite", "libtiff", "curl", "openssl"]
+        for dep in deps:
+            if dep not in self.spec:
+                continue
+            ldflags.append(self.spec[dep].libs.search_flags)
+            libs.append(self.spec[dep].libs.link_flags)
+        if self.spec.satisfies("+iconv") and self.spec["libiconv"].satisfies("~shared"):
+            libs.append("-liconv")
+
+        if ldflags or libs:
+            args.append("LDFLAGS=%s" % " ".join(ldflags + libs))
+            args.append("LIBS=%s" % " ".join(libs))
 
         # Remove empty strings
         args = [arg for arg in args if arg]
 
         return args
+
+    @run_after("autoreconf")
+    @when("^geos~shared")
+    def patch(self):
+        filter_file("--ldflags` -lgeos_c", "--ldflags` -lgeos_c -lgeos", "configure")
 
     def build(self, pkg, spec, prefix):
         # https://trac.osgeo.org/gdal/wiki/GdalOgrInJavaBuildInstructionsUnix
