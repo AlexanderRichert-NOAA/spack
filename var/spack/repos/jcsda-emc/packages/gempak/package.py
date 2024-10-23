@@ -11,20 +11,21 @@ class Gempak(MakefilePackage):
     homepage = "https://www.unidata.ucar.edu/software/gempak/"
     git = "https://github.com/Unidata/gempak"
 
+    #maintainers("AlexanderRichert-NOAA")
+
+    #license("BSD-3-Clause")
+
+    version("7.18.0", tag="7.18.0")
     version("7.15.1", tag="7.15.1")
-
-    depends_on("gcc", type="build")
-
-    variant("fismahigh", default=False, description="Apply modifications for FISMA-high compliance")
 
     def setup_build_environment(self, env):
         nawips = self.build_directory
         env.set("NAWIPS", nawips)
-        env.set("EDEX_SERVER", "edex-cloud.unidata.ucar.edu"*self.spec.satisfies("~fismahigh"))
         env.set("USE_GFORTRAN","1")
         env.set("MAKEINC", "Makeinc.common")
         na_os = "linux64"
         env.set("NA_OS", na_os)
+        # Always use gfortran config and patch for other compilers
         env.set("GEM_COMPTYPE", "gfortran")
         # GEMPAK directory:
         gempak = f"{nawips}/gempak"
@@ -32,7 +33,7 @@ class Gempak(MakefilePackage):
         env.set("GEMPAKHOME", f"{nawips}/gempak")
         # CONFIGURATION directory
         env.set("CONFIGDIR", f"{nawips}/config")
-        # System environmental variables 
+        # System environmental variables
         os_root = f"{nawips}/os/$NA_OS"
         env.set("OS_ROOT", os_root)
         os_bin = f"{os_root}/bin"
@@ -69,6 +70,10 @@ class Gempak(MakefilePackage):
         filter_file("make -s distclean \)", " )", "extlibs/zlib/Makefile")
         filter_file('test "\$gcc" -eq 1', 'test 1', 'extlibs/zlib/zlib/configure')
         filter_file('test -z "\$CC"', 'test 1', 'extlibs/zlib/zlib/configure')
+        filter_file("CC = .+", "CC = %s" % self.compiler.cc, "config/Makeinc.linux64_gfortran")
+        filter_file("FC = .+", "FC = %s" % self.compiler.fc, "config/Makeinc.linux64_gfortran")
+        filter_file("(COPT = .+)", r"\1 %s" % " ".join(self.spec.compiler_flags["cflags"]), "config/Makeinc.linux64_gfortran")
+        filter_file("(FOPT = .+)", r"\1 %s" % " ".join(self.spec.compiler_flags["fflags"]), "config/Makeinc.linux64_gfortran")
 
     def install(self, spec, prefix):
         install_tree("os/linux64", prefix)
