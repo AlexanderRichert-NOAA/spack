@@ -1,6 +1,8 @@
+import glob
 import os
 
 from spack.package import *
+
 
 class Gempak(MakefilePackage):
     """GEMPAK/NAWIPSGEMPAK is an analysis, display, and product generation
@@ -13,9 +15,9 @@ class Gempak(MakefilePackage):
     homepage = "https://www.unidata.ucar.edu/software/gempak/"
     git = "https://github.com/Unidata/gempak"
 
-    #maintainers("AlexanderRichert-NOAA")
+    # maintainers("AlexanderRichert-NOAA")
 
-    #license("BSD-3-Clause")
+    # license("BSD-3-Clause")
 
     version("7.18.0", tag="7.18.0")
     version("7.15.1", tag="7.15.1")
@@ -25,7 +27,7 @@ class Gempak(MakefilePackage):
     def setup_build_environment(self, env):
         nawips = self.build_directory
         env.set("NAWIPS", nawips)
-        env.set("USE_GFORTRAN","1")
+        env.set("USE_GFORTRAN", "1")
         env.set("MAKEINC", "Makeinc.common")
         na_os = "linux64"
         env.set("NA_OS", na_os)
@@ -38,7 +40,7 @@ class Gempak(MakefilePackage):
         # CONFIGURATION directory
         env.set("CONFIGDIR", f"{nawips}/config")
         # System environmental variables
-        os_root = f"{nawips}/os/$NA_OS"
+        os_root = f"{nawips}/os/{na_os}"
         env.set("OS_ROOT", os_root)
         os_bin = f"{os_root}/bin"
         env.set("OS_BIN", os_bin)
@@ -71,31 +73,56 @@ class Gempak(MakefilePackage):
         env.set("OS", na_os)
 
     def build(self, spec, prefix):
-        # rpath-ify "internal" zlib and hdf5/hl and netcdf???
         make("everything")
 
     def patch(self):
+        makeinc = "config/Makeinc.linux64_gfortran"
         if self.spec.satisfies("%intel"):
-            filter_file("-fno-second-underscore -fno-range-check -fd-lines-as-comments", "-assume byterecl -extend-source -fpscomp logicals", "config/Makeinc.linux64_gfortran")
-            filter_file("LDM_FLAGS.*", "LDFLAGS = -nofor-main -assume byterecl", "config/Makeinc.linux64_gfortran")
-        filter_file("^CC = .+", "CC = %s" % self.compiler.cc, "config/Makeinc.linux64_gfortran")
-        filter_file("^FC = .+", "FC = %s" % self.compiler.fc, "config/Makeinc.linux64_gfortran")
-        filter_file("^(COPT = .+)", r"\1 %s" % " ".join(self.spec.compiler_flags["cflags"]), "config/Makeinc.linux64_gfortran")
-        filter_file("^(FOPT = .+)", r"\1 %s" % " ".join(self.spec.compiler_flags["fflags"]), "config/Makeinc.linux64_gfortran")
-        filter_file("make -s distclean \)", " )", "extlibs/zlib/Makefile")
-        filter_file('test "\$gcc" -eq 1', 'test 1', 'extlibs/zlib/zlib/configure')
-        filter_file('test -z "\$CC"', 'test 1', 'extlibs/zlib/zlib/configure')
+            filter_file(
+                "-fno-second-underscore -fno-range-check -fd-lines-as-comments",
+                "-assume byterecl -extend-source -fpscomp logicals -nofor-main -assume byterecl",
+                makeinc,
+            )
+        filter_file("^CC = .+", "CC = %s" % self.compiler.cc_names[0], makeinc)
+        filter_file("^FC = .+", "FC = %s" % self.compiler.fc_names[0], makeinc)
+        filter_file(
+            "^(COPT = .+)", r"\1 %s" % " ".join(self.spec.compiler_flags["cflags"]), makeinc
+        )
+        filter_file(
+            "^(FOPT = .+)", r"\1 %s" % " ".join(self.spec.compiler_flags["fflags"]), makeinc
+        )
+        filter_file(r"make -s distclean \)", " )", "extlibs/zlib/Makefile")
+        filter_file(r'test "\$gcc" -eq 1', "test 1", "extlibs/zlib/zlib/configure")
+        filter_file(r'test -z "\$CC"', "test 1", "extlibs/zlib/zlib/configure")
         filter_file(".*setenv NAWIPS .*", "", "Gemenviron")
         filter_file(r"\bln -s\b", "ln -s --force", "config/Makeinc.common")
+        glob1 = glob.glob("gempak/source/programs/*/*/Makefile")
+        glob2 = glob.glob("gempak/source/programs/upc/programs/*/Makefile")
+        glob3 = glob.glob("gempak/source/contrib/*/*/Makefile")
+        for f in glob1 + glob2 + glob3:
+            filter_file(r"^(\$\(PROG[^\)]*\).*)\$\(LIBINC[^\)]*\)", r"\1", f)
+        filter_file(
+            r"^all : \$\(LIBINC\) \$\(PROG\)",
+            "all : $(PROG)",
+            "gempak/source/programs/gd/gdcsv/Makefile",
+        )
 
     def install(self, spec, prefix):
-        install_tree("os/linux64/bin", prefix.bin)
-        install_tree("os/linux64/lib", prefix.lib)
-        install_tree("os/linux64/include", prefix.include)
-        install_tree("os/linux64/share", prefix.share)
+        install_tree("os/linux64", prefix)
         install_tree("gempak", prefix.gempak)
         built_exes = os.listdir(self.spec.prefix.bin)
-        target_exes = ("atest", "gdcntr", "gddelt", "gddiag", "gdinfo", "gdplot2_nc", "gdvint", "gpend", "nagrib2", "snedit")
+        target_exes = (
+            "atest",
+            "gdcntr",
+            "gddelt",
+            "gddiag",
+            "gdinfo",
+            "gdplot2_nc",
+            "gdvint",
+            "gpend",
+            "nagrib2",
+            "snedit",
+        )
         missing_exes = [exe for exe in target_exes if exe not in built_exes]
         if missing_exes:
             raise InstallError("Not all executables were installed: %s" % ", ".join(missing_exes))
