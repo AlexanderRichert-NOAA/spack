@@ -176,6 +176,17 @@ class StackEnv(object):
         env_common_dir = os.path.join(self.env_dir(), "common")
         shutil.copy(self.base_packages, env_common_dir)
 
+    def get_upstream_realpaths(self, upstream_path):
+        spack_yaml_path = os.path.realpath(os.path.join(upstream_path, "../spack.yaml"))
+        with open(spack_yaml_path, "r") as f:
+            spack_yaml = syaml.load_config(f)
+        upstream_paths = [upstream_path]
+        if "upstreams" in spack_yaml["spack"].keys():
+            entries = spack_yaml["spack"]["upstreams"]
+            for entry in entries.items():
+                upstream_paths += self.get_upstream_realpaths(entry[1]["install_tree"])
+        return upstream_paths
+
     def write(self):
         """Write environment out to a spack.yaml in <env_dir>/<name>.
         Will create env_dir if it does not exist.
@@ -242,7 +253,10 @@ class StackEnv(object):
             spack.config.add(lmod_prefix, scope=env_scope)
             spack.config.add(tcl_prefix, scope=env_scope)
         if self.upstreams:
-            for upstream_path in self.upstreams:
+            all_upstreams = []
+            for upstream in self.upstreams:
+                all_upstreams.extend(self.get_upstream_realpaths(upstream[0]))
+            for upstream_path in all_upstreams:
                 upstream_path = upstream_path[0]
                 # spack doesn't handle "~/" correctly, this fixes it:
                 upstream_path = os.path.expanduser(upstream_path)
@@ -260,7 +274,7 @@ class StackEnv(object):
                 if path_parts:
                     name = path_parts["spack_stack_ver"] + "-" + path_parts["env_name"]
                 else:
-                    name = os.path.basename(upstream_path)
+                    name = os.path.realpath(os.path.join(upstream_path, ".."))
                 upstream = "upstreams:%s:install_tree:'%s'" % (name, upstream_path)
                 logging.info("Adding upstream path '%s'" % upstream_path)
                 spack.config.add(upstream, scope=env_scope)
