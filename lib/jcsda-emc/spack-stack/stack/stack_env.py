@@ -257,7 +257,6 @@ class StackEnv(object):
             for upstream in self.upstreams:
                 all_upstreams.extend(self.get_upstream_realpaths(upstream[0]))
             for upstream_path in all_upstreams:
-                upstream_path = upstream_path[0]
                 # spack doesn't handle "~/" correctly, this fixes it:
                 upstream_path = os.path.expanduser(upstream_path)
                 if not os.path.basename(os.path.normpath(upstream_path)) == "install":
