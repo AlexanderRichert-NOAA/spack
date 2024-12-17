@@ -277,6 +277,14 @@ class StackEnv(object):
                 upstream = "upstreams:%s:install_tree:'%s'" % (name, upstream_path)
                 logging.info("Adding upstream path '%s'" % upstream_path)
                 spack.config.add(upstream, scope=env_scope)
+            new_envrepo = os.path.join(self.env_dir(), "envrepo")
+            for upstream_path in all_upstreams[::-1]:
+                envrepo_path = os.path.realpath(os.path.join(upstream_path, "../envrepo"))
+                if os.path.isdir(envrepo_path):
+                    shutil.copytree(envrepo_path, new_envrepo, dirs_exist_ok=True)
+            if os.path.isdir(new_envrepo):
+                repo_cfg = "repos:[$env/envrepo]"
+                spack.config.add(repo_cfg, scope=env_scope)
         if self.modifypkg:
             logging.info("Creating custom repo with packages %s" % ", ".join(self.modifypkg))
             env_repo_path = os.path.join(env_dir, "envrepo")
