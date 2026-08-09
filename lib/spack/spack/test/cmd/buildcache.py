@@ -118,6 +118,117 @@ def test_buildcache_create_fails_on_noargs(tmp_path: pathlib.Path):
         buildcache("push", "--unsigned", str(tmp_path))
 
 
+def test_buildcache_install_use_root_specs_and_specs_mutually_exclusive():
+    with pytest.raises(spack.main.SpackCommandError, match="mutually exclusive"):
+        buildcache("install", "--use-root-specs", "mpileaks")
+
+
+def test_buildcache_install_requires_specs_without_use_root_specs():
+    with pytest.raises(spack.main.SpackCommandError, match="required unless"):
+        buildcache("install", "--unsigned")
+
+
+def test_buildcache_install_use_root_specs_empty_environment(monkeypatch):
+    class MockQuery:
+        def __init__(self, all_architectures):
+            self.possible_specs = []
+
+        def __call__(self, spec, **kwargs):
+            return []
+
+    class MockEnvironment:
+        def concrete_roots(self):
+            return []
+
+    monkeypatch.setattr(spack.binary_distribution, "BinaryCacheQuery", MockQuery)
+    monkeypatch.setattr(spack.cmd, "require_active_env", lambda parser: MockEnvironment())
+
+    with pytest.raises(spack.main.SpackCommandError, match="no concrete root specs"):
+        buildcache("install", "--use-root-specs", "--unsigned")
+
+
+@pytest.mark.db
+def test_buildcache_install_from_environment_roots_detects_missing_root_specs(
+    monkeypatch, database
+):
+    root = next(spec for spec in database.query_local() if spec.name == "mpileaks")
+
+    class MockQuery:
+        def __init__(self, all_architectures):
+            self.possible_specs = []
+
+        def __call__(self, spec, **kwargs):
+            return []
+
+    class MockEnvironment:
+        def concrete_roots(self):
+            return [root]
+
+    monkeypatch.setattr(spack.binary_distribution, "BinaryCacheQuery", MockQuery)
+    monkeypatch.setattr(spack.cmd, "require_active_env", lambda parser: MockEnvironment())
+
+    with pytest.raises(spack.main.SpackCommandError, match="No matching buildcache entries"):
+        buildcache("install", "--use-root-specs", "--unsigned")
+
+
+@pytest.mark.db
+def test_buildcache_install_from_environment_roots(monkeypatch, database):
+    root = next(spec for spec in database.query_local() if spec.name == "mpileaks")
+    available_specs = list(
+        root.traverse(root=True, order="breadth", deptype=("link", "run"))
+    )
+
+    class MockQuery:
+        def __init__(self, all_architectures):
+            self.possible_specs = available_specs
+
+        def __call__(self, spec, **kwargs):
+            return [s for s in self.possible_specs if s.satisfies(spec)]
+
+    class MockEnvironment:
+        def concrete_roots(self):
+            return [root]
+
+    install_calls = []
+
+    monkeypatch.setattr(spack.binary_distribution, "BinaryCacheQuery", MockQuery)
+    monkeypatch.setattr(spack.cmd, "require_active_env", lambda parser: MockEnvironment())
+    monkeypatch.setattr(
+        spack.binary_distribution,
+        "install_single_spec",
+        lambda spec, unsigned=False, force=False: install_calls.append(spec),
+    )
+
+    buildcache("install", "--use-root-specs", "--unsigned")
+
+    assert len(install_calls) == 1
+    assert install_calls[0].dag_hash() == root.dag_hash()
+
+
+@pytest.mark.db
+def test_buildcache_install_from_environment_roots_detects_missing_dependencies(
+    monkeypatch, database
+):
+    root = next(spec for spec in database.query_local() if spec.name == "mpileaks")
+
+    class MockQuery:
+        def __init__(self, all_architectures):
+            self.possible_specs = [root]
+
+        def __call__(self, spec, **kwargs):
+            return [s for s in self.possible_specs if s.satisfies(spec)]
+
+    class MockEnvironment:
+        def concrete_roots(self):
+            return [root]
+
+    monkeypatch.setattr(spack.binary_distribution, "BinaryCacheQuery", MockQuery)
+    monkeypatch.setattr(spack.cmd, "require_active_env", lambda parser: MockEnvironment())
+
+    with pytest.raises(spack.main.SpackCommandError):
+        buildcache("install", "--use-root-specs", "--unsigned")
+
+
 @pytest.mark.skipif(getuid() == 0, reason="user is root")
 def test_buildcache_create_fail_on_perm_denied(
     install_mockery, mock_fetch, tmp_path: pathlib.Path

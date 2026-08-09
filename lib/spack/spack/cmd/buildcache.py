@@ -60,6 +60,35 @@ class ViewUpdateMode(enum.Enum):
     APPEND = enum.auto()
 
 
+def _dedupe_specs_by_hash(specs: List[Spec]) -> List[Spec]:
+    deduped = {}
+    for spec in specs:
+        deduped[spec.dag_hash()] = spec
+    return list(deduped.values())
+
+
+def _missing_runtime_dependencies_from_buildcache(
+    roots: List[Spec], available_specs_by_hash: Mapping[str, Spec]
+) -> List[Spec]:
+    missing: List[Spec] = []
+    seen = set()
+    for node in traverse.traverse_nodes(
+        roots, root=True, deptype=dt.RUN | dt.LINK, key=traverse.by_dag_hash
+    ):
+        node_hash = node.dag_hash()
+        if node_hash in seen:
+            continue
+        seen.add(node_hash)
+
+        if node.external or spack.store.STORE.db.installed(node):
+            continue
+
+        if node_hash not in available_specs_by_hash:
+            missing.append(node)
+
+    return missing
+
+
 def setup_parser(subparser: argparse.ArgumentParser):
     setattr(setup_parser, "parser", subparser)
     subparsers = subparser.add_subparsers(help="buildcache sub-commands")
@@ -172,6 +201,13 @@ def setup_parser(subparser: argparse.ArgumentParser):
         "--otherarch",
         action="store_true",
         help="install specs from other architectures instead of default platform and OS",
+    )
+    install.add_argument(
+        "--use-root-specs",
+        action="store_true",
+        dest="use_root_specs",
+        help="take specs from concrete root specs of the active environment and "
+        "match buildcache entries by exact DAG hash",
     )
 
     arguments.add_common_arguments(install, ["specs"])
@@ -622,11 +658,52 @@ def push_fn(args):
 
 def install_fn(args):
     """install from a binary package"""
-    if not args.specs:
-        args.subparser.error("a spec argument is required to install from a buildcache")
+    if args.use_root_specs and args.specs:
+        args.subparser.error("--use-root-specs and explicit specs are mutually exclusive")
 
     query = spack.binary_distribution.BinaryCacheQuery(all_architectures=args.otherarch)
-    matches = spack.store.find(args.specs, multiple=args.multiple, query_fn=query)
+
+    if args.use_root_specs:
+        env = spack.cmd.require_active_env(args.subparser)
+        roots = _dedupe_specs_by_hash(env.concrete_roots())
+        if not roots:
+            tty.die("The active environment has no concrete root specs")
+
+        available_specs_by_hash = {s.dag_hash(): s for s in query.possible_specs}
+        missing_roots = [s for s in roots if s.dag_hash() not in available_specs_by_hash]
+        if missing_roots:
+            raise spack.error.SpackError(
+                "No matching buildcache entries for one or more environment roots",
+                "\n".join(
+                    elide_list(
+                        [f"    {_format_spec(s)}" for s in missing_roots],
+                        5,
+                    )
+                ),
+            )
+
+        matches = [available_specs_by_hash[s.dag_hash()] for s in roots]
+        missing_chain = _missing_runtime_dependencies_from_buildcache(
+            matches, available_specs_by_hash
+        )
+        if missing_chain:
+            raise spack.error.SpackError(
+                "Missing buildcache dependencies for selected environment roots",
+                "\n".join(
+                    elide_list(
+                        [f"    {_format_spec(s)}" for s in missing_chain],
+                        10,
+                    )
+                ),
+            )
+    else:
+        if not args.specs:
+            args.subparser.error(
+                "a spec argument is required unless --use-root-specs is specified"
+            )
+
+        matches = spack.store.find(args.specs, multiple=args.multiple, query_fn=query)
+
     for match in matches:
         spack.binary_distribution.install_single_spec(
             match, unsigned=args.unsigned, force=args.force
