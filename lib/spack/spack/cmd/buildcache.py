@@ -665,37 +665,42 @@ def install_fn(args):
 
     if args.use_root_specs:
         env = spack.cmd.require_active_env(args.subparser)
-        roots = _dedupe_specs_by_hash(env.concrete_roots())
+        roots = env.roots()
         if not roots:
-            tty.die("The active environment has no concrete root specs")
+            tty.die("The active environment has no root specs")
 
-        available_specs_by_hash = {s.dag_hash(): s for s in query.possible_specs}
-        missing_roots = [s for s in roots if s.dag_hash() not in available_specs_by_hash]
+        available_specs = query.possible_specs
+        available_specs_by_hash = {s.dag_hash(): s for s in available_specs}
+
+        # Find candidates for each root, keeping them grouped for the consistency pass below.
+        per_root = [(root, [s for s in available_specs if s.satisfies(root)]) for root in roots]
+
+        missing_roots = [root for root, candidates in per_root if not candidates]
         if missing_roots:
             raise spack.error.SpackError(
                 "No matching buildcache entries for one or more environment roots",
                 "\n".join(
                     elide_list(
-                        [f"    {_format_spec(s)}" for s in missing_roots],
+                        [f"    {root}" for root in missing_roots],
                         5,
                     )
                 ),
             )
 
-        matches = [available_specs_by_hash[s.dag_hash()] for s in roots]
-        missing_chain = _missing_runtime_dependencies_from_buildcache(
-            matches, available_specs_by_hash
-        )
-        if missing_chain:
-            raise spack.error.SpackError(
-                "Missing buildcache dependencies for selected environment roots",
-                "\n".join(
-                    elide_list(
-                        [f"    {_format_spec(s)}" for s in missing_chain],
-                        10,
-                    )
-                ),
-            )
+        # Collect transitive deps (present in the buildcache) of one candidate per root.
+        # This lets us prefer a dep already selected for another root, so that e.g.
+        # a shared dependency like zlib resolves to the same concrete spec everywhere.
+        dep_pool = {}
+        for _, candidates in per_root:
+            for dep in candidates[0].traverse(root=False):
+                h = dep.dag_hash()
+                if h in available_specs_by_hash:
+                    dep_pool[h] = dep
+
+        matches = []
+        for root, candidates in per_root:
+            consistent = [s for s in dep_pool.values() if s.satisfies(root)]
+            matches.append(consistent[0] if consistent else candidates[0])
     else:
         if not args.specs:
             args.subparser.error(
