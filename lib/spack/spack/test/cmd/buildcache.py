@@ -119,13 +119,15 @@ def test_buildcache_create_fails_on_noargs(tmp_path: pathlib.Path):
 
 
 def test_buildcache_install_use_root_specs_and_specs_mutually_exclusive():
-    with pytest.raises(spack.main.SpackCommandError, match="mutually exclusive"):
+    with pytest.raises(spack.main.SpackCommandError) as exc_info:
         buildcache("install", "--use-root-specs", "mpileaks")
+    assert "mutually exclusive" in exc_info.value.output
 
 
 def test_buildcache_install_requires_specs_without_use_root_specs():
-    with pytest.raises(spack.main.SpackCommandError, match="required unless"):
+    with pytest.raises(spack.main.SpackCommandError) as exc_info:
         buildcache("install", "--unsigned")
+    assert "required unless" in exc_info.value.output
 
 
 def test_buildcache_install_use_root_specs_empty_environment(monkeypatch):
@@ -137,22 +139,18 @@ def test_buildcache_install_use_root_specs_empty_environment(monkeypatch):
             return []
 
     class MockEnvironment:
-        def concrete_roots(self):
+        def roots(self):
             return []
 
     monkeypatch.setattr(spack.binary_distribution, "BinaryCacheQuery", MockQuery)
     monkeypatch.setattr(spack.cmd, "require_active_env", lambda parser: MockEnvironment())
 
-    with pytest.raises(spack.main.SpackCommandError, match="no concrete root specs"):
+    with pytest.raises(spack.main.SpackCommandError) as exc_info:
         buildcache("install", "--use-root-specs", "--unsigned")
+    assert "no root specs" in exc_info.value.output
 
 
-@pytest.mark.db
-def test_buildcache_install_from_environment_roots_detects_missing_root_specs(
-    monkeypatch, database
-):
-    root = next(spec for spec in database.query_local() if spec.name == "mpileaks")
-
+def test_buildcache_install_from_environment_roots_detects_missing_root_specs(monkeypatch):
     class MockQuery:
         def __init__(self, all_architectures):
             self.possible_specs = []
@@ -161,13 +159,13 @@ def test_buildcache_install_from_environment_roots_detects_missing_root_specs(
             return []
 
     class MockEnvironment:
-        def concrete_roots(self):
-            return [root]
+        def roots(self):
+            return [spack.spec.Spec("mpileaks")]
 
     monkeypatch.setattr(spack.binary_distribution, "BinaryCacheQuery", MockQuery)
     monkeypatch.setattr(spack.cmd, "require_active_env", lambda parser: MockEnvironment())
 
-    with pytest.raises(spack.main.SpackCommandError, match="No matching buildcache entries"):
+    with pytest.raises(spack.error.SpackError, match="No matching buildcache entries"):
         buildcache("install", "--use-root-specs", "--unsigned")
 
 
@@ -186,8 +184,8 @@ def test_buildcache_install_from_environment_roots(monkeypatch, database):
             return [s for s in self.possible_specs if s.satisfies(spec)]
 
     class MockEnvironment:
-        def concrete_roots(self):
-            return [root]
+        def roots(self):
+            return [spack.spec.Spec("mpileaks")]
 
     install_calls = []
 
@@ -206,27 +204,76 @@ def test_buildcache_install_from_environment_roots(monkeypatch, database):
 
 
 @pytest.mark.db
-def test_buildcache_install_from_environment_roots_detects_missing_dependencies(
-    monkeypatch, database
-):
+def test_buildcache_install_dep_pool_consistency(monkeypatch, database):
+    """dep_pool should prefer the version already pulled in by another root's match."""
     root = next(spec for spec in database.query_local() if spec.name == "mpileaks")
+    concrete_dyninst = next(s for s in root.traverse(root=False) if s.name == "dyninst")
+
+    # A different (older) dyninst that also satisfies Spec("dyninst") but is NOT mpileaks's dep.
+    # Placing it first ensures it would be candidates[0] without the dep_pool preference.
+    decoy_dyninst = spack.concretize.concretize_one("dyninst@8.1.1")
+    available_specs = [decoy_dyninst] + list(
+        root.traverse(root=True, order="breadth", deptype=("link", "run"))
+    )
 
     class MockQuery:
         def __init__(self, all_architectures):
-            self.possible_specs = [root]
-
-        def __call__(self, spec, **kwargs):
-            return [s for s in self.possible_specs if s.satisfies(spec)]
+            self.possible_specs = available_specs
 
     class MockEnvironment:
-        def concrete_roots(self):
-            return [root]
+        def roots(self):
+            return [spack.spec.Spec("mpileaks"), spack.spec.Spec("dyninst")]
 
+    install_calls = []
     monkeypatch.setattr(spack.binary_distribution, "BinaryCacheQuery", MockQuery)
     monkeypatch.setattr(spack.cmd, "require_active_env", lambda parser: MockEnvironment())
+    monkeypatch.setattr(
+        spack.binary_distribution,
+        "install_single_spec",
+        lambda spec, unsigned=False, force=False: install_calls.append(spec),
+    )
 
-    with pytest.raises(spack.main.SpackCommandError):
-        buildcache("install", "--use-root-specs", "--unsigned")
+    buildcache("install", "--use-root-specs", "--unsigned")
+
+    installed_dynists = [s for s in install_calls if s.name == "dyninst"]
+    assert len(installed_dynists) == 1
+    # dep_pool should have supplied the dyninst from mpileaks's dep tree, not the decoy
+    assert installed_dynists[0].dag_hash() == concrete_dyninst.dag_hash()
+
+
+@pytest.mark.db
+def test_buildcache_install_explicit_constraint_overrides_dep_pool(monkeypatch, database):
+    """An explicit root version constraint should win over the dep_pool candidate."""
+    root = next(spec for spec in database.query_local() if spec.name == "mpileaks")
+    # mpileaks depends on dyninst@8.2; the user explicitly requests a different version
+    explicit_dyninst = spack.concretize.concretize_one("dyninst@8.1.1")
+    available_specs = [explicit_dyninst] + list(
+        root.traverse(root=True, order="breadth", deptype=("link", "run"))
+    )
+
+    class MockQuery:
+        def __init__(self, all_architectures):
+            self.possible_specs = available_specs
+
+    class MockEnvironment:
+        def roots(self):
+            return [spack.spec.Spec("mpileaks"), spack.spec.Spec("dyninst@8.1.1")]
+
+    install_calls = []
+    monkeypatch.setattr(spack.binary_distribution, "BinaryCacheQuery", MockQuery)
+    monkeypatch.setattr(spack.cmd, "require_active_env", lambda parser: MockEnvironment())
+    monkeypatch.setattr(
+        spack.binary_distribution,
+        "install_single_spec",
+        lambda spec, unsigned=False, force=False: install_calls.append(spec),
+    )
+
+    buildcache("install", "--use-root-specs", "--unsigned")
+
+    installed_dynists = [s for s in install_calls if s.name == "dyninst"]
+    assert len(installed_dynists) == 1
+    # dep_pool has dyninst@8.2 but it does not satisfy @8.1.1, so the explicit candidate wins
+    assert installed_dynists[0].dag_hash() == explicit_dyninst.dag_hash()
 
 
 @pytest.mark.skipif(getuid() == 0, reason="user is root")
