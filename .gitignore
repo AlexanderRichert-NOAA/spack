@@ -520,3 +520,8 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+### NCO stuff
+.spack-env/
+/spack-helpers
+/spack-packages
