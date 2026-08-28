@@ -396,7 +396,7 @@ _spack() {
     then
         SPACK_COMPREPLY="--color -v --verbose -k --insecure -b --bootstrap -V --version -h --help -H --all-help -c --config -C --config-scope -e --env -D --env-dir -E --no-env --use-env-repo -d --debug -t --backtrace --timestamp -m --mock --print-shell-vars --stacktrace -l --enable-locks -L --disable-locks"
     else
-        SPACK_COMPREPLY="add arch audit blame bootstrap build-env buildcache cd change checksum ci clean commands compiler compilers concretize concretise config containerize containerise create debug deconcretize dependencies dependents deprecate dev-build develop diff docs edit env extensions external fetch find gc gpg graph help info install isolate license list load location log-parse logs maintainers make-installer mark mirror module patch pkg providers pydoc python reindex remove rm repo resource restage solve spec stage style tags test test-env tutorial undevelop uninstall unit-test unload url verify versions view"
+        SPACK_COMPREPLY="add allow-only-approved-pkgs arch audit blame bootstrap build-env buildcache cd change checksum ci clean commands compiler compilers concretize concretise config containerize containerise create create-python-venv debug deconcretize dependencies dependents deploy deprecate dev-build develop diff docs edit env extensions external fetch fetch-deps filter-compilers find fix-intel-config gc gpg graph help info install isolate license list load location log-parse logs maintainers make-installer mark mirror module patch pkg providers pydoc python reindex remove rm repo resource restage solve spec stage style swap-package tags test test-env tutorial undevelop uninstall unit-test unload url validate verify versions view"
     fi
 }
 
@@ -407,6 +407,10 @@ _spack_add() {
     else
         _all_packages
     fi
+}
+
+_spack_allow_only_approved_pkgs() {
+    SPACK_COMPREPLY="-h --help --packages --pkgs-from-file"
 }
 
 _spack_arch() {
@@ -961,6 +965,15 @@ _spack_create() {
     fi
 }
 
+_spack_create_python_venv() {
+    if $list_options
+    then
+        SPACK_COMPREPLY="-h --help"
+    else
+        SPACK_COMPREPLY=""
+    fi
+}
+
 _spack_debug() {
     if $list_options
     then
@@ -998,6 +1011,15 @@ _spack_dependents() {
         SPACK_COMPREPLY="-h --help -i --installed -t --transitive"
     else
         _all_packages
+    fi
+}
+
+_spack_deploy() {
+    if $list_options
+    then
+        SPACK_COMPREPLY="-h --help -n --no-scheduler -x --skip-go-rust-handling -r --redeploy-existing -s --site -u --until -l --list-only --disable-validation-use-at-your-own-risk"
+    else
+        SPACK_COMPREPLY=""
     fi
 }
 
@@ -1239,6 +1261,42 @@ _spack_fetch() {
     fi
 }
 
+_spack_fetch_deps() {
+    if $list_options
+    then
+        SPACK_COMPREPLY="-h --help"
+    else
+        SPACK_COMPREPLY="go rust"
+    fi
+}
+
+_spack_fetch_deps_go() {
+    if $list_options
+    then
+        SPACK_COMPREPLY="-h --help --use-spack-go"
+    else
+        _all_packages
+    fi
+}
+
+_spack_fetch_deps_rust() {
+    if $list_options
+    then
+        SPACK_COMPREPLY="-h --help --use-spack-rust"
+    else
+        _all_packages
+    fi
+}
+
+_spack_filter_compilers() {
+    if $list_options
+    then
+        SPACK_COMPREPLY="-h --help --remove --keep-only --all-compilers-unbuildable"
+    else
+        _installed_compilers
+    fi
+}
+
 _spack_find() {
     if $list_options
     then
@@ -1246,6 +1304,10 @@ _spack_find() {
     else
         _installed_packages
     fi
+}
+
+_spack_fix_intel_config() {
+    SPACK_COMPREPLY="-h --help -c --consolidate"
 }
 
 _spack_gc() {
@@ -1962,6 +2024,15 @@ _spack_style() {
     fi
 }
 
+_spack_swap_package() {
+    if $list_options
+    then
+        SPACK_COMPREPLY="-h --help --concretize --dependent-spec --uninstall-removed"
+    else
+        _all_packages
+    fi
+}
+
 _spack_tags() {
     if $list_options
     then
@@ -2111,6 +2182,45 @@ _spack_url_summary() {
 
 _spack_url_stats() {
     SPACK_COMPREPLY="-h --help --show-issues"
+}
+
+_spack_validate() {
+    if $list_options
+    then
+        SPACK_COMPREPLY="-h --help"
+    else
+        SPACK_COMPREPLY="check-duplicates allow-pkgs-for-compiler compilers check-approved-pkgs check-buildable"
+    fi
+}
+
+_spack_validate_check_duplicates() {
+    SPACK_COMPREPLY="-h --help -i --ignore-package --ignore-build-deps"
+}
+
+_spack_validate_allow_pkgs_for_compiler() {
+    if $list_options
+    then
+        SPACK_COMPREPLY="-h --help --pkgs-from-file"
+    else
+        _installed_compilers
+    fi
+}
+
+_spack_validate_compilers() {
+    if $list_options
+    then
+        SPACK_COMPREPLY="-h --help"
+    else
+        _installed_compilers
+    fi
+}
+
+_spack_validate_check_approved_pkgs() {
+    SPACK_COMPREPLY="-h --help --packages --pkgs-from-file"
+}
+
+_spack_validate_check_buildable() {
+    SPACK_COMPREPLY="-h --help"
 }
 
 _spack_verify() {
