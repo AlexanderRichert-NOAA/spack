@@ -1,7 +1,24 @@
 modules:
-  default:
-    enable::
-    - lmod
+  modules_flat:
+    enable:: [lmod]
+    lmod:
+      hierarchy:: []
+      core_compilers:: [gcc,oneapi,intel,intel-oneapi-compilers]
+      all:
+        autoload: run
+    roots:
+      lmod: $env/modules/flat
+  with_mpi_hierarchy:
+    enable:: [lmod]
+    lmod:
+      hierarchy:: [mpi]
+      core_compilers:: [gcc,oneapi,intel,intel-oneapi-compilers]
+      all:
+        autoload: run
+    roots:
+      lmod: $env/modules/mpi_hierarchy
+  extended_hierarchy:
+    enable:: [lmod]
     lmod:
       hierarchy:
       - mpi
@@ -9,8 +26,8 @@ modules:
       - netcdf_c_virtual
       - esmf_virtual
       - python_virtual
+      core_compilers:: [gcc,oneapi,intel,intel-oneapi-compilers]
       all:
         autoload: run
-      boost:
-        suffixes:
-          '%gcc': gcc
+    roots:
+      lmod: $env/modules/ext_hierarchy
