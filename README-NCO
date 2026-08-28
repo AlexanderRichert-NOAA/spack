@@ -1,10 +1,13 @@
 # Run the following commands from the spack repo root directory
 
-# One-time setup to provide some extra stack validation commands:
-git clone https://github.com/NOAA-EMC/spack-helpers
-
 # Initialize Spack into shell:
 export SPACK_DISABLE_LOCAL_CONFIG=true
 . share/spack/setup-env.sh
 
+# *One-time* setup:
+#  Provide some extra stack validation commands:
+git clone https://github.com/NOAA-EMC/spack-helpers
+#  Install Spack bootstrap bundle:
+spack bootstrap root '$spack/bootstrap'
+spack bootstrap now
 
