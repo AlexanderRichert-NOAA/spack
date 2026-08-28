@@ -8,6 +8,5 @@ export SPACK_DISABLE_LOCAL_CONFIG=true
 #  Provide some extra stack validation commands:
 git clone https://github.com/NOAA-EMC/spack-helpers
 #  Install Spack bootstrap bundle:
-spack bootstrap root '$spack/bootstrap'
 spack bootstrap now
 
