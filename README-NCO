@@ -3,6 +3,7 @@
 # Initialize Spack into shell:
 export SPACK_DISABLE_LOCAL_CONFIG=true
 . share/spack/setup-env.sh
+export SPACK_USER_CACHE_PATH=$SPACK_ROOT/cache
 
 # *One-time* setup:
 #  Provide some extra stack validation commands:
