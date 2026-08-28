@@ -8,6 +8,7 @@ modules:
         autoload: run
     roots:
       lmod: $env/modules/flat
+    arch_folder: false
   with_mpi_hierarchy:
     enable:: [lmod]
     lmod:
@@ -17,6 +18,7 @@ modules:
         autoload: run
     roots:
       lmod: $env/modules/mpi_hierarchy
+    arch_folder: false
   extended_hierarchy:
     enable:: [lmod]
     lmod:
@@ -31,3 +33,4 @@ modules:
         autoload: run
     roots:
       lmod: $env/modules/ext_hierarchy
+    arch_folder: false
