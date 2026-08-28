@@ -69,6 +69,6 @@ packages:
       - +esmumps
       - build_system=cmake
   subversion:
-    require: ['~serf']
+    require: ['+serf']
   zlib-ng:
     require: ['+compat', '~new_strategies']
