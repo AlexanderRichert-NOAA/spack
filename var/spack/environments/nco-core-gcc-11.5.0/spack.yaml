@@ -8,13 +8,13 @@ spack:
   config:
     deprecated: true
 
-    extensions:
-    - /lfs/work/alexander_richert/stack/spack-helpers
-  view: false
+  view: true
 
   include:
-  - site/packages_gcc-11.5.0.yaml
-  - site
+  - ../common-config/packages_gcc-11.5.0.yaml
+  - ../common-config/config.yaml
+  - ../common-config/modules.yaml
+  - ../common-config/packages.yaml
 
   specs:
   - awscli
@@ -39,8 +39,3 @@ spack:
   - libxext
   - libx11
   - xproto
-  modules:
-    default:
-      lmod:
-        core_compilers:
-        - gcc@11.5.0/dkk24cbj62nesft4fo3ggr663aund24n

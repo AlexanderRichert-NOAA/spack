@@ -8,13 +8,13 @@ spack:
   config:
     deprecated: true
 
-    extensions:
-    - /lfs/work/alexander_richert/stack/spack-helpers
   view: false
 
   include:
-  - site/packages_oneapi-2026.1.0.yaml
-  - site
+  - ../common-config/packages_oneapi-2026.1.0.yaml
+  - ../common-config/config.yaml
+  - ../common-config/modules.yaml
+  - ../common-config/packages.yaml
 
   specs:
   - bacio
@@ -73,7 +73,7 @@ spack:
   - wrf-io
   - xml-fortran
   repos:
-    envrepo: $env/spack_repo/envrepo
+    nco_repo: $env/../spack_repo/nco_repo
   packages:
     cmake:
       externals:
@@ -137,8 +137,3 @@ spack:
         prefix: /lfs/work/alexander_richert/stack/spack/opt/spack/crtm-fix-2.4.0.1_emc-ed2joat2qislfkpz32dqml4bc2f32pr5
       - spec: crtm-fix@3.1.2.0 +big_endian~little_endian+netcdf~testfiles
         prefix: /lfs/work/alexander_richert/stack/spack/opt/spack/crtm-fix-3.1.2.0-vxrmhib7iqlkowthlvxcfjzkg76kvwwv
-  modules:
-    default:
-      lmod:
-        core_compilers:
-        - gcc@11.5.0/dkk24cbj62nesft4fo3ggr663aund24n
