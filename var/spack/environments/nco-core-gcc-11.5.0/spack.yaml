@@ -8,7 +8,7 @@ spack:
   config:
     deprecated: true
 
-  view: true
+  view: false
 
   include:
   - ../common-config/packages_gcc-11.5.0.yaml
