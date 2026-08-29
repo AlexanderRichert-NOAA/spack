@@ -28,8 +28,6 @@ packages:
   #
   # Use `require::` to override require's from common/packages.yaml,
   # and `require:<newline>  - '...'` to add to existing ones.
-  bacio:
-    require:: ['@2.4.1']
   boost:
     require:: ['@:']
   cdo:
@@ -49,9 +47,9 @@ packages:
   libxslt:
     require: ['~crypto']
   mapl:
-    require:: ['@2.53', '~pflogger', '~fargparse', '~extdata2g']
+    require:: ['~pflogger', '~fargparse', '~extdata2g']
   netcdf-c:
-    require:: ['@4.9.2', '+mpi', '~parallel-netcdf', '~dap', '~blosc', '~szip', '~byterange']
+    require:: ['+mpi', '~parallel-netcdf', '~dap', '~blosc', '~szip', '~byterange']
   pango:
     require:: ["@=1.48.11"] # avoid some deps/restrictions (json-glib)
   py-colorama:: {}
@@ -59,7 +57,7 @@ packages:
     require:: ['~excel']
   scotch:
     require::
-      - '@7.0.7'
+      - '@7.0.13'
       - +mpi
       - +metis
       - ~shared
