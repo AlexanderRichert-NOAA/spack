@@ -11,3 +11,7 @@ git clone https://github.com/NOAA-EMC/spack-helpers
 #  Install Spack bootstrap bundle:
 spack bootstrap now
 
+# Install an environment:
+## cd var/spack/environments/nco-core-gcc-11.5.0
+## spack env activate .
+## spack install --only-concrete -j20
