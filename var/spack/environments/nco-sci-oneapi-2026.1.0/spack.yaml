@@ -17,12 +17,12 @@ spack:
   - ../common-config/packages.yaml
 
   specs:
-  - bacio
+  - bacio@2.4.1
   - bufr
   - cdo
 #  - cfitsio
   - crtm@=3.1.2
-  - ecmwf-atlas
+  - ecmwf-atlas +eigen +fckit ~fftw +openmp +shared ~tesselation ~trans
   - esmf@8.8.0
   - fms@2025.03 precision=32,64 +quad_precision +openmp +yaml +gfs_phys constants=GFS
   - fms@2024.03 precision=32,64 +quad_precision +openmp ~yaml +gfs_phys constants=GFS +deprecated_io
@@ -79,62 +79,62 @@ spack:
     cmake:
       externals:
       - spec: cmake@3.31.12 ~doc+ncurses+ownlibs~qtgui
-        prefix: /lfs/work/alexander_richert/stack/spack/opt/spack/cmake-3.31.12-mken3aqlztaiytatp5eswd5u2bnfyby5
+        prefix: /lfs/work/alexander_richert/stack/test-v1/spack/opt/nco-v1/cmake-3.31.12-mken3aqlztaiytatp5eswd5u2bnfyby5
     git:
       externals:
       - spec: git@2.55.0 +man+nls+perl+subtree~tcltk
-        prefix: /lfs/work/alexander_richert/stack/spack/opt/spack/git-2.55.0-v3wgwx2aexsygsicmwek2gwqtflxsmks
+        prefix: /lfs/work/alexander_richert/stack/test-v1/spack/opt/nco-v1/git-2.55.0-v3wgwx2aexsygsicmwek2gwqtflxsmks
     git-lfs:
       externals:
       - spec: git-lfs@3.7.1
-        prefix: /lfs/work/alexander_richert/stack/spack/opt/spack/git-lfs-3.7.1-pukjelt72k3lv2kh37ve2lw5fqrrpaic
+        prefix: /lfs/work/alexander_richert/stack/test-v1/spack/opt/nco-v1/git-lfs-3.7.1-pukjelt72k3lv2kh37ve2lw5fqrrpaic
     gmake:
       externals:
       - spec: gmake@4.4.1 ~guile
-        prefix: /lfs/work/alexander_richert/stack/spack/opt/spack/gmake-4.4.1-x2ab7llnp4ewsywr3weugch4vuys6kgx
+        prefix: /lfs/work/alexander_richert/stack/test-v1/spack/opt/nco-v1/gmake-4.4.1-x2ab7llnp4ewsywr3weugch4vuys6kgx
     libice:
       externals:
       - spec: libice@1.1.2
-        prefix: /lfs/work/alexander_richert/stack/spack/opt/spack/libice-1.1.2-cbqqet3w4sbljueclubgqslcud7gsaeo
+        prefix: /lfs/work/alexander_richert/stack/test-v1/spack/opt/nco-v1/libice-1.1.2-cbqqet3w4sbljueclubgqslcud7gsaeo
     libsm:
       externals:
       - spec: libsm@1.2.6
-        prefix: /lfs/work/alexander_richert/stack/spack/opt/spack/libsm-1.2.6-ynysq2zcfkzughjwgqytfvvwwpuhpbka
+        prefix: /lfs/work/alexander_richert/stack/test-v1/spack/opt/nco-v1/libsm-1.2.6-ynysq2zcfkzughjwgqytfvvwwpuhpbka
     libx11:
       externals:
       - spec: libx11@1.8.13
-        prefix: /lfs/work/alexander_richert/stack/spack/opt/spack/libx11-1.8.13-rewidwwbb75z4rhgxfehczp2zlutmhpn
+        prefix: /lfs/work/alexander_richert/stack/test-v1/spack/opt/nco-v1/libx11-1.8.13-rewidwwbb75z4rhgxfehczp2zlutmhpn
     libxext:
       externals:
       - spec: libxext@1.3.7
-        prefix: /lfs/work/alexander_richert/stack/spack/opt/spack/libxext-1.3.7-rsazhooakivp4cqnpllctdaqcgawdmh4
+        prefix: /lfs/work/alexander_richert/stack/test-v1/spack/opt/nco-v1/libxext-1.3.7-rsazhooakivp4cqnpllctdaqcgawdmh4
     libxi:
       externals:
       - spec: libxi@1.7.10
-        prefix: /lfs/work/alexander_richert/stack/spack/opt/spack/libxi-1.7.10-dhniliqdbdzb47ygyshvv247ayt6xft3
+        prefix: /lfs/work/alexander_richert/stack/test-v1/spack/opt/nco-v1/libxi-1.7.10-dhniliqdbdzb47ygyshvv247ayt6xft3
     libxt:
       externals:
       - spec: libxt@1.3.1
-        prefix: /lfs/work/alexander_richert/stack/spack/opt/spack/libxt-1.3.1-m24gnavmynwqox5up3isjsy24iwtsh4o
+        prefix: /lfs/work/alexander_richert/stack/test-v1/spack/opt/nco-v1/libxt-1.3.1-m24gnavmynwqox5up3isjsy24iwtsh4o
     libxtst:
       externals:
       - spec: libxtst@1.2.5
-        prefix: /lfs/work/alexander_richert/stack/spack/opt/spack/libxtst-1.2.5-7wwp7kmwdummfkt754sxdyetjywkcrjg
+        prefix: /lfs/work/alexander_richert/stack/test-v1/spack/opt/nco-v1/libxtst-1.2.5-7wwp7kmwdummfkt754sxdyetjywkcrjg
     motif:
       externals:
       - spec: motif@2.3.8
-        prefix: /lfs/work/alexander_richert/stack/spack/opt/spack/motif-2.3.8-bhrmpjgcr2rejexqiu4llrs6sbe3fwfw
+        prefix: /lfs/work/alexander_richert/stack/test-v1/spack/opt/nco-v1/motif-2.3.8-bhrmpjgcr2rejexqiu4llrs6sbe3fwfw
     perl:
       externals:
       - spec: perl@5.42.2 +cpanm+opcode+open+shared+threads
-        prefix: /lfs/work/alexander_richert/stack/spack/opt/spack/perl-5.42.2-54d4rmvr5cadhrmsxbzncvx3tnd4sw6h
+        prefix: /lfs/work/alexander_richert/stack/test-v1/spack/opt/nco-v1/perl-5.42.2-54d4rmvr5cadhrmsxbzncvx3tnd4sw6h
     xproto:
       externals:
       - spec: xproto@7.0.31
-        prefix: /lfs/work/alexander_richert/stack/spack/opt/spack/xproto-7.0.31-dhrk6mcmupuoigz7nujckzebhcxmpc4p
+        prefix: /lfs/work/alexander_richert/stack/test-v1/spack/opt/nco-v1/xproto-7.0.31-dhrk6mcmupuoigz7nujckzebhcxmpc4p
     crtm-fix:
       externals:
       - spec: crtm-fix@2.4.0.1_emc +big_endian~little_endian+netcdf
-        prefix: /lfs/work/alexander_richert/stack/spack/opt/spack/crtm-fix-2.4.0.1_emc-ed2joat2qislfkpz32dqml4bc2f32pr5
+        prefix: /lfs/work/alexander_richert/stack/test-v1/spack/opt/nco-v1/crtm-fix-2.4.0.1_emc-ed2joat2qislfkpz32dqml4bc2f32pr5
       - spec: crtm-fix@3.1.2.0 +big_endian~little_endian+netcdf~testfiles
-        prefix: /lfs/work/alexander_richert/stack/spack/opt/spack/crtm-fix-3.1.2.0-vxrmhib7iqlkowthlvxcfjzkg76kvwwv
+        prefix: /lfs/work/alexander_richert/stack/test-v1/spack/opt/nco-v1/crtm-fix-3.1.2.0-vxrmhib7iqlkowthlvxcfjzkg76kvwwv
