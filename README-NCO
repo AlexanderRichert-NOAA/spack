@@ -1,14 +1,14 @@
 # Run the following commands from the spack repo root directory
 
-# Initialize Spack into shell:
+# Initialize Spack into shell; remember to do the export's every time!!!:
 export SPACK_DISABLE_LOCAL_CONFIG=true
 . share/spack/setup-env.sh
 export SPACK_USER_CACHE_PATH=${SPACK_ROOT:?}/cache
 
 #### One-time setup:
-#  Provide some extra stack validation commands:
+# Provide some extra stack validation commands:
 git clone https://github.com/NOAA-EMC/spack-helpers
-#  Install Spack bootstrap bundle:
+# Install Spack bootstrap bundle:
 spack bootstrap now
 
 #### Install an environment:
@@ -16,16 +16,18 @@ spack bootstrap now
 # - 'nco-core' env must be installed first, followed by nco-sci*, followed by any add-on's
 # - The 'external' paths/hashes in the nco-sci* spack.yaml's that point to the nco-core installation will need to be updated based on the new installation path.
 #
+## Env set up/concretization.
 # $ cd var/spack/environments/nco-core-gcc-11.5.0
 # $ spack env activate .
 # $ spack concretize
 #
-# $ spack validate check-duplicates # some duplicates are expected; this cmd uses spack-helpers extension
-#
-## Take inventory of GCC-built packages in nco-sci* envs:
-# $ spack validate allow-pkgs-for-compiler gcc
-#
+## Validate concretization. 'validate' commands come from spack-helpers extension.
+## Check for duplicates; some are expected (explicitly requested root specs; one or two builds deps like py-cython):
+# $ spack validate check-duplicates
+## Take inventory of GCC-built packages in nco-sci* envs ('all' is a meaningless placeholder here):
+# $ spack validate allow-pkgs-for-compiler gcc all
 ## Currently there is no up-to-date list of approved packages, but if someone creates one, then run:
 # $ spack validate check-approved-pkgs --pkgs-from-file approved_packages.txt
 #
-# $ spack install --only-concrete -j20
+## Installation.
+# $ spack install --only-concrete --jobs 20
