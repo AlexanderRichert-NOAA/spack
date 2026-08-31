@@ -13,4 +13,3 @@
 repos:
   builtin:
     git: https://github.com/spack/spack-packages.git
-    destination: $spack/spack-packages
