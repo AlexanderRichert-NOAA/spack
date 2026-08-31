@@ -3,15 +3,29 @@
 # Initialize Spack into shell:
 export SPACK_DISABLE_LOCAL_CONFIG=true
 . share/spack/setup-env.sh
-export SPACK_USER_CACHE_PATH=$SPACK_ROOT/cache
+export SPACK_USER_CACHE_PATH=${SPACK_ROOT:?}/cache
 
-# *One-time* setup:
+#### One-time setup:
 #  Provide some extra stack validation commands:
 git clone https://github.com/NOAA-EMC/spack-helpers
 #  Install Spack bootstrap bundle:
 spack bootstrap now
 
-# Install an environment:
-## cd var/spack/environments/nco-core-gcc-11.5.0
-## spack env activate .
-## spack install --only-concrete -j20
+#### Install an environment:
+## IMPORTANT NOTES:
+# - 'nco-core' env must be installed first, followed by nco-sci*, followed by any add-on's
+# - The 'external' paths/hashes in the nco-sci* spack.yaml's that point to the nco-core installation will need to be updated based on the new installation path.
+#
+# $ cd var/spack/environments/nco-core-gcc-11.5.0
+# $ spack env activate .
+# $ spack concretize
+#
+# $ spack validate check-duplicates # some duplicates are expected; this cmd uses spack-helpers extension
+#
+## Take inventory of GCC-built packages in nco-sci* envs:
+# $ spack validate allow-pkgs-for-compiler gcc
+#
+## Currently there is no up-to-date list of approved packages, but if someone creates one, then run:
+# $ spack validate check-approved-pkgs --pkgs-from-file approved_packages.txt
+#
+# $ spack install --only-concrete -j20
