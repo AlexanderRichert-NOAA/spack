@@ -521,3 +521,4 @@ $RECYCLE.BIN/
 /spack-packages
 /bootstrap
 /cache
+/var/spack/environments/*/modules/
