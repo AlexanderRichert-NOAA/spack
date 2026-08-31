@@ -1,6 +1,6 @@
 bootstrap:
   enable: true
-  root: $spack/bootstrap
+  root: $spack/cache/bootstrap
   sources:
   - name: github-actions-v2
     metadata: $spack/share/spack/bootstrap/github-actions-v2
