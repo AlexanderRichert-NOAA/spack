@@ -15,6 +15,7 @@ spack:
   - ../common-config/config.yaml
   - ../common-config/modules.yaml
   - ../common-config/packages.yaml
+  - ../common-config/bootstrap.yaml
 
   specs:
   - awscli
