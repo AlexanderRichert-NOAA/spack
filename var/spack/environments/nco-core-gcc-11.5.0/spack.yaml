@@ -24,7 +24,7 @@ spack:
   - crtm-fix@=3.1.2.0 # must be consistent with crtm version in nco-sci
   - crtm-fix@=2.4.0.1_emc # must be consistent with crtm version in nco-sci
   - cuda@12.9.1
-  - ecflow ^boost@1.88
+  - ecflow ^boost@1.85
   - git
   - git-lfs
   - gmake
